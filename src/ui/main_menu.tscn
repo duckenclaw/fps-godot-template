@@ -1,8 +1,8 @@
 [gd_scene load_steps=6 format=3 uid="uid://bbnssv0o4f2j3"]
 
-[ext_resource type="Theme" uid="uid://ntqh6xyylbj0" path="res://assets/theme.tres" id="1_qkuje"]
+[ext_resource type="Theme" uid="uid://ntqh6xyylbj0" path="res://assets/styles/theme.tres" id="1_qkuje"]
 [ext_resource type="Script" uid="uid://cpa4mtd4pxc4v" path="res://src/ui/main_menu.gd" id="2_h03rr"]
-[ext_resource type="Texture2D" uid="uid://c47h65hmluixk" path="res://assets/duckclaw-bg.jpg" id="2_qoywa"]
+[ext_resource type="Texture2D" uid="uid://c47h65hmluixk" path="res://assets/sprites/duckclaw-bg.jpg" id="2_qoywa"]
 [ext_resource type="PackedScene" uid="uid://dcj1fdi7ipnil" path="res://src/ui/screens/title_screen.tscn" id="3_5mgu5"]
 [ext_resource type="PackedScene" uid="uid://dj3ng2wmtqap8" path="res://src/ui/screens/options_screen.tscn" id="4_h03rr"]
 

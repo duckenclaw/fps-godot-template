@@ -2,24 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ccynkfnmds1t1"
-path.s3tc="res://.godot/imported/hands_FPSarm_256px.png-ea7e4780f1425b254731d65678f1637d.s3tc.ctex"
+uid="uid://d0n62d264ha7a"
+path="res://.godot/imported/duckclaw.png-2c2870fa9842998ba0d8ef2ebb9faae0.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
-"vram_texture": true
-}
-generator_parameters={
-"md5": "a164cb6006e0adaf397c221a162ae97c"
+"vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/hands_FPSarm_256px.png"
-dest_files=["res://.godot/imported/hands_FPSarm_256px.png-ea7e4780f1425b254731d65678f1637d.s3tc.ctex"]
+source_file="res://assets/sprites/duckclaw.png"
+dest_files=["res://.godot/imported/duckclaw.png-2c2870fa9842998ba0d8ef2ebb9faae0.ctex"]
 
 [params]
 
-compress/mode=2
+compress/mode=0
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
@@ -27,7 +23,7 @@ compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=true
+mipmaps/generate=false
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""
@@ -41,4 +37,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=0
+detect_3d/compress_to=1

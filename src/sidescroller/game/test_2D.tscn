@@ -1,17 +1,52 @@
-[gd_scene load_steps=3 format=3 uid="uid://c13r6rfdi5ces"]
+[gd_scene load_steps=7 format=3 uid="uid://c13r6rfdi5ces"]
 
+[ext_resource type="Texture2D" uid="uid://t4t0nbbbbwur" path="res://assets/sprites/ground3.png" id="1_en7hu"]
 [ext_resource type="PackedScene" uid="uid://5uhaowxeav6y" path="res://src/sidescroller/player/player.tscn" id="1_m1oxf"]
+[ext_resource type="Texture2D" uid="uid://do2l5cnyxd24f" path="res://assets/sprites/sky0.png" id="3_xylfh"]
+[ext_resource type="Texture2D" uid="uid://bm7vrg2wcwft" path="res://assets/sprites/mountains1.png" id="4_u0jnq"]
+[ext_resource type="Texture2D" uid="uid://dt7xouqoshf5k" path="res://assets/sprites/forest2.png" id="5_0js0d"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_aqdtn"]
 size = Vector2(1200, 10)
 
 [node name="Test2d" type="Node2D" unique_id=1666445153]
 
+[node name="ParallaxBackground" type="Node2D" parent="." unique_id=1771224385]
+scale = Vector2(18, 18)
+
+[node name="Parallax2D" type="Parallax2D" parent="ParallaxBackground" unique_id=624306303]
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxBackground/Parallax2D" unique_id=1317286129]
+texture_filter = 1
+texture = ExtResource("3_xylfh")
+
+[node name="Parallax2D2" type="Parallax2D" parent="ParallaxBackground" unique_id=1762808721]
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxBackground/Parallax2D2" unique_id=580832497]
+texture_filter = 1
+texture = ExtResource("4_u0jnq")
+
+[node name="Parallax2D3" type="Parallax2D" parent="ParallaxBackground" unique_id=762488698]
+
+[node name="Sprite2D" type="Sprite2D" parent="ParallaxBackground/Parallax2D3" unique_id=1848617042]
+texture_filter = 1
+texture = ExtResource("5_0js0d")
+
 [node name="Floor" type="StaticBody2D" parent="." unique_id=1809686260]
+position = Vector2(0, 24)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Floor" unique_id=906207917]
 position = Vector2(0, 5)
 shape = SubResource("RectangleShape2D_aqdtn")
 debug_color = Color(0.99162334, 0, 0.26919016, 0.41960785)
 
+[node name="Sprite2D" type="Sprite2D" parent="Floor" unique_id=738418475]
+texture_filter = 1
+texture_repeat = 2
+scale = Vector2(5, 5)
+texture = ExtResource("1_en7hu")
+region_enabled = true
+region_rect = Rect2(0, 49.576, 240, 14.424)
+
 [node name="Player" parent="." unique_id=1552727450 instance=ExtResource("1_m1oxf")]
+position = Vector2(0, 24)

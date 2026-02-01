@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d0n62d264ha7a"
-path="res://.godot/imported/duckclaw.png-786ac7567c53b3b336f07ce117c4ec24.ctex"
+uid="uid://t4t0nbbbbwur"
+path="res://.godot/imported/ground3.png-38bfe278666812fafcde375cac2e17f3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/duckclaw.png"
-dest_files=["res://.godot/imported/duckclaw.png-786ac7567c53b3b336f07ce117c4ec24.ctex"]
+source_file="res://assets/sprites/ground3.png"
+dest_files=["res://.godot/imported/ground3.png-38bfe278666812fafcde375cac2e17f3.ctex"]
 
 [params]
 
