@@ -1,12 +1,12 @@
 [gd_scene load_steps=6 format=3 uid="uid://bbnssv0o4f2j3"]
 
-[ext_resource type="Theme" uid="uid://ntqh6xyylbj0" path="res://assets/theme.tres" id="1_qkuje"]
+[ext_resource type="Theme" uid="uid://ntqh6xyylbj0" path="res://assets/styles/theme.tres" id="1_qkuje"]
 [ext_resource type="Script" uid="uid://cpa4mtd4pxc4v" path="res://src/ui/main_menu.gd" id="2_h03rr"]
 [ext_resource type="Texture2D" uid="uid://c47h65hmluixk" path="res://assets/duckclaw-bg.jpg" id="2_qoywa"]
 [ext_resource type="PackedScene" uid="uid://dcj1fdi7ipnil" path="res://src/ui/screens/title_screen.tscn" id="3_5mgu5"]
 [ext_resource type="PackedScene" uid="uid://dj3ng2wmtqap8" path="res://src/ui/screens/options_screen.tscn" id="4_h03rr"]
 
-[node name="MainMenu" type="Control"]
+[node name="MainMenu" type="Control" unique_id=979139220]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -16,7 +16,7 @@ grow_vertical = 2
 theme = ExtResource("1_qkuje")
 script = ExtResource("2_h03rr")
 
-[node name="TextureRect" type="TextureRect" parent="."]
+[node name="TextureRect" type="TextureRect" parent="." unique_id=859622242]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -26,10 +26,10 @@ grow_vertical = 2
 texture = ExtResource("2_qoywa")
 expand_mode = 3
 
-[node name="TitleScreen" parent="." instance=ExtResource("3_5mgu5")]
+[node name="TitleScreen" parent="." unique_id=821145789 instance=ExtResource("3_5mgu5")]
 layout_mode = 1
 
-[node name="OptionsScreen" parent="." instance=ExtResource("4_h03rr")]
+[node name="OptionsScreen" parent="." unique_id=631055454 instance=ExtResource("4_h03rr")]
 visible = false
 layout_mode = 1
 
