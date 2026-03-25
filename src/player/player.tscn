@@ -24,7 +24,7 @@ metadata/_custom_type_script = "uid://b8lpvad5c77ty"
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_v8ymh"]
 
-[node name="Player" type="CharacterBody3D" unique_id=885925266]
+[node name="Player" type="CharacterBody3D" unique_id=885925266 groups=["player"]]
 script = ExtResource("1_player")
 config = SubResource("Resource_ejvt7")
 

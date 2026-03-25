@@ -36,6 +36,8 @@ extends Resource
 
 # Camera settings
 @export var mouse_sensitivity: float = 0.002
+@export var invert_camera_x: bool = false
+@export var invert_camera_y: bool = false
 @export var tilt_angle: float = 10.0
 @export var tilt_speed: float = 5.0
 @export var tilt_shift: float = 1.0  # Horizontal camera shift when tilting
@@ -49,3 +51,6 @@ extends Resource
 
 # Interaction
 @export var interact_distance: float = 3.0
+
+# Gameplay settings
+@export var difficulty: String = "Normal"

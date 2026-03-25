@@ -87,12 +87,16 @@ func _process(delta: float) -> void:
 
 ## Rotate camera based on mouse movement
 func rotate_camera(relative: Vector2) -> void:
+	# Apply invert settings
+	var horizontal_input = relative.x * (-1 if config.invert_camera_x else 1)
+	var vertical_input = relative.y * (-1 if config.invert_camera_y else 1)
+
 	# Horizontal rotation (Y axis) - rotate the player body
-	rotation_y -= relative.x * config.mouse_sensitivity
+	rotation_y -= horizontal_input * config.mouse_sensitivity
 	player.rotation.y = rotation_y
 
 	# Vertical rotation (X axis) - rotate the camera
-	rotation_x -= relative.y * config.mouse_sensitivity
+	rotation_x -= vertical_input * config.mouse_sensitivity
 	rotation_x = clamp(rotation_x, -PI/2, PI/2)
 	camera.rotation.x = rotation_x
 

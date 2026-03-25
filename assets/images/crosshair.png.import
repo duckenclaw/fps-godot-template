@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c47h65hmluixk"
-path="res://.godot/imported/duckclaw-bg.jpg-8faaba15e999dfa351ff2ce37455cf90.ctex"
+uid="uid://dv532pqh1mdsj"
+path="res://.godot/imported/crosshair.png-8b182635149764aaded85e6f086ada69.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/duckclaw-bg.jpg"
-dest_files=["res://.godot/imported/duckclaw-bg.jpg-8faaba15e999dfa351ff2ce37455cf90.ctex"]
+source_file="res://assets/images/crosshair.png"
+dest_files=["res://.godot/imported/crosshair.png-8b182635149764aaded85e6f086ada69.ctex"]
 
 [params]
 

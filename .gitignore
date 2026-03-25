@@ -9,6 +9,9 @@ Thumbs.db
 export.cfg
 export_presets.cfg
 
+# Builds
+builds/*
+
 # Imported translations (automatically generated from CSV files)
 *.translation
 

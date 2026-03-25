@@ -57,6 +57,12 @@ func _ready() -> void:
 	if not config:
 		config = PlayerConfig.new()
 
+	# Load settings from GameSettings singleton
+	config.mouse_sensitivity = GameSettings.mouse_sensitivity
+	config.invert_camera_x = GameSettings.invert_camera_x
+	config.invert_camera_y = GameSettings.invert_camera_y
+	config.difficulty = GameSettings.difficulty
+
 	# Setup wallrun raycasts
 	setup_wallrun_raycasts()
 

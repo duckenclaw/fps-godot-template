@@ -15,3 +15,8 @@
 - [ ] moving objects through "interact"
 - [ ] hands model and animations
 - [ ] screen shake
+
+## UI
+
+- [ ] graphics menu
+- [ ] options menu
