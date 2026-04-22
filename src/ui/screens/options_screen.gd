@@ -7,6 +7,11 @@ signal close_options()
 # Graphics controls
 @onready var screen_mode_option: OptionButton = $MarginContainer/OptionsContainer/Graphics/MarginContainer/FlowContainer/ScreenMode/OptionButton
 @onready var resolution_option: OptionButton = $MarginContainer/OptionsContainer/Graphics/MarginContainer/FlowContainer/Resolution/OptionButton
+@onready var vsync_check: CheckButton = $MarginContainer/OptionsContainer/Graphics/MarginContainer/FlowContainer/VSync/CheckButton
+@onready var brightness_slider: HSlider = $MarginContainer/OptionsContainer/Graphics/MarginContainer/FlowContainer/Brightness/HSlider
+@onready var brightness_label: Label = $MarginContainer/OptionsContainer/Graphics/MarginContainer/FlowContainer/Brightness/Value
+@onready var fov_slider: HSlider = $MarginContainer/OptionsContainer/Graphics/MarginContainer/FlowContainer/FieldOfView/HSlider
+@onready var fov_label: Label = $MarginContainer/OptionsContainer/Graphics/MarginContainer/FlowContainer/FieldOfView/Value
 
 # Audio controls
 @onready var master_volume_slider: HSlider = $MarginContainer/OptionsContainer/Audio/MarginContainer/FlowContainer/Master/HSlider
@@ -26,6 +31,9 @@ signal close_options()
 # Temporary settings (not saved until Apply is clicked)
 var temp_screen_mode: int = DisplayServer.WINDOW_MODE_WINDOWED
 var temp_resolution: Vector2i = Vector2i(1920, 1080)
+var temp_vsync_enabled: bool = true
+var temp_brightness: float = 50.0
+var temp_fov: float = 90.0
 var temp_master_volume: float = 50.0
 var temp_music_volume: float = 50.0
 var temp_effects_volume: float = 50.0
@@ -37,6 +45,8 @@ var temp_invert_y: bool = false
 
 func _ready() -> void:
 	# Connect slider signals for live preview
+	brightness_slider.value_changed.connect(_on_brightness_changed)
+	fov_slider.value_changed.connect(_on_fov_changed)
 	master_volume_slider.value_changed.connect(_on_master_volume_changed)
 	music_volume_slider.value_changed.connect(_on_music_volume_changed)
 	effects_volume_slider.value_changed.connect(_on_effects_volume_changed)
@@ -51,6 +61,9 @@ func load_settings_to_ui() -> void:
 	# Graphics
 	temp_screen_mode = GameSettings.screen_mode
 	temp_resolution = GameSettings.resolution
+	temp_vsync_enabled = GameSettings.vsync_enabled
+	temp_brightness = GameSettings.brightness
+	temp_fov = GameSettings.field_of_view
 
 	# Set screen mode dropdown
 	match temp_screen_mode:
@@ -67,6 +80,17 @@ func load_settings_to_ui() -> void:
 		if resolution_option.get_item_text(i) == resolution_text:
 			resolution_option.selected = i
 			break
+
+	# Set VSync checkbox
+	vsync_check.button_pressed = temp_vsync_enabled
+
+	# Set brightness slider
+	brightness_slider.value = temp_brightness
+	brightness_label.text = "%d%%" % temp_brightness
+
+	# Set FOV slider
+	fov_slider.value = temp_fov
+	fov_label.text = "%d" % temp_fov
 
 	# Audio
 	temp_master_volume = GameSettings.master_volume
@@ -120,6 +144,18 @@ func _on_resolution_item_selected(index: int) -> void:
 		temp_resolution = Vector2i(int(parts[0]), int(parts[1]))
 
 
+## Graphics: Brightness changed
+func _on_brightness_changed(value: float) -> void:
+	temp_brightness = value
+	brightness_label.text = "%d%%" % value
+
+
+## Graphics: FOV changed
+func _on_fov_changed(value: float) -> void:
+	temp_fov = value
+	fov_label.text = "%d" % value
+
+
 ## Audio: Master volume changed (live preview)
 func _on_master_volume_changed(value: float) -> void:
 	temp_master_volume = value
@@ -156,6 +192,9 @@ func _on_apply_button_pressed() -> void:
 	# Update GameSettings with all temp values
 	GameSettings.screen_mode = temp_screen_mode
 	GameSettings.resolution = temp_resolution
+	GameSettings.vsync_enabled = vsync_check.button_pressed
+	GameSettings.brightness = temp_brightness
+	GameSettings.field_of_view = temp_fov
 	GameSettings.master_volume = temp_master_volume
 	GameSettings.music_volume = temp_music_volume
 	GameSettings.effects_volume = temp_effects_volume
@@ -169,6 +208,12 @@ func _on_apply_button_pressed() -> void:
 
 	# Apply graphics settings (window mode and resolution)
 	GameSettings.apply_graphics_settings()
+
+	# Apply VSync
+	GameSettings.apply_vsync()
+
+	# Apply brightness
+	GameSettings.apply_brightness()
 
 	# Apply audio settings
 	GameSettings.apply_audio_settings()
@@ -191,6 +236,11 @@ func update_player_config() -> void:
 		player.config.invert_camera_x = GameSettings.invert_camera_x
 		player.config.invert_camera_y = GameSettings.invert_camera_y
 		player.config.difficulty = GameSettings.difficulty
+
+		# Apply FOV to camera if it exists
+		if player.camera_3d:
+			GameSettings.apply_fov_to_camera(player.camera_3d)
+
 		print("Player config updated")
 
 

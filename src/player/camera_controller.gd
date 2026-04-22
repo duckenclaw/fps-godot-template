@@ -42,7 +42,9 @@ func _ready() -> void:
 	if player:
 		config = player.config
 		if config:
-			current_fov = config.base_fov
+			# Load FOV from GameSettings (overrides config base_fov)
+			current_fov = GameSettings.field_of_view
+			config.base_fov = current_fov  # Update config to match
 			camera.fov = current_fov
 
 	# Get footsteps player reference

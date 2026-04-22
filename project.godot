@@ -10,8 +10,8 @@ config_version=5
 
 [application]
 
-config/name="godot-project-template"
-config/tags=PackedStringArray("2d")
+config/name="fps-godot-template"
+config/tags=PackedStringArray("3d", "fps")
 run/main_scene="uid://bbnssv0o4f2j3"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 run/max_fps=60
