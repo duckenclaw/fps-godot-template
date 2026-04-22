@@ -26,13 +26,15 @@ func _ready() -> void:
 func _can_drop_data(_at_position: Vector2, data: Variant) -> bool:
 	if typeof(data) != TYPE_DICTIONARY:
 		return false
-	if not data.has("source"):
+	var src: String = data.get("source", "")
+	if src == "":
 		return false
-	var is_valid: bool = _is_drop_valid(data)
-	if screen:
+	var is_valid: bool = src == "grid" and _is_drop_valid(data)
+	if screen and src == "grid":
 		screen.on_grid_hover(cell_index, data, is_valid)
-	# Accept hover for all sources so the cursor shows the drag; invalid will no-op on drop.
-	return is_valid
+	# Consume both grid and quick drags so they never fall through to the screen's
+	# throw-on-background handler. Invalid grid moves simply no-op in _drop_data.
+	return src == "grid" or src == "quick"
 
 func _is_drop_valid(data: Variant) -> bool:
 	if inventory == null:
@@ -62,9 +64,11 @@ func _is_drop_valid(data: Variant) -> bool:
 func _drop_data(_at_position: Vector2, data: Variant) -> void:
 	if inventory == null:
 		return
+	if screen:
+		screen.on_drag_ended()
 	var src: String = data.get("source", "")
 	if src != "grid":
-		return
+		return  # quick drags are consumed but do nothing on a grid cell
 	var anchor: int = data.get("anchor", -1)
 	var pick_dx: int = data.get("pick_dx", 0)
 	var pick_dy: int = data.get("pick_dy", 0)

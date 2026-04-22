@@ -77,12 +77,13 @@ func _build_ui() -> void:
 		_grid_area.add_child(cell)
 		_grid_cells.append(cell)
 
-	# Items layer above cells.
+	# Items layer above cells. IGNORE so the layer itself never intercepts mouse
+	# events — individual ItemWidget children still handle drag via their own filter.
 	_items_layer = Control.new()
 	_items_layer.name = "ItemsLayer"
 	_items_layer.anchor_right = 1.0
 	_items_layer.anchor_bottom = 1.0
-	_items_layer.mouse_filter = Control.MOUSE_FILTER_PASS
+	_items_layer.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_grid_area.add_child(_items_layer)
 
 	# Snap ghost on top.
@@ -261,6 +262,9 @@ func _show_snap_ghost(cx: int, cy: int, w: int, h: int, is_valid: bool) -> void:
 func _hide_snap_ghost() -> void:
 	if _snap_ghost:
 		_snap_ghost.visible = false
+
+func on_drag_ended() -> void:
+	_hide_snap_ghost()
 
 # -------- toast --------
 

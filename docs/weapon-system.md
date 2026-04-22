@@ -17,7 +17,7 @@ sword:
 - grip: one-handed
 - damage: 15
 
-greatsword:
+greatsword [2x4]:
 - type: melee-weapon
 - grip: two-handed
 - damage: 35
