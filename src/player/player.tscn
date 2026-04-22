@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://ct7eavw7p0ci3"]
+[gd_scene load_steps=22 format=3 uid="uid://ct7eavw7p0ci3"]
 
 [ext_resource type="Script" uid="uid://f6hmn8wpksud" path="res://src/player/player.gd" id="1_player"]
 [ext_resource type="Script" uid="uid://b8lpvad5c77ty" path="res://src/player/player_config.gd" id="2_2rfnl"]
@@ -16,7 +16,9 @@
 [ext_resource type="Script" uid="uid://b28h1qmbh0h7r" path="res://src/player/states/wallrunning_state.gd" id="12_wallrunning"]
 [ext_resource type="PackedScene" uid="uid://4epmqkty5xqt" path="res://src/ui/hud.tscn" id="14_ejvt7"]
 [ext_resource type="PackedScene" uid="uid://c4qrq5kj8wqt4" path="res://src/ui/pause_menu.tscn" id="15_u15jt"]
+[ext_resource type="PackedScene" uid="uid://bm7la4xskxhg3" path="res://src/ui/screens/inventory_screen.tscn" id="17_oyld2"]
 [ext_resource type="AudioStream" uid="uid://cfxtnb6hisoi2" path="res://assets/sounds/steps/step0.wav" id="17_phnc4"]
+[ext_resource type="Script" uid="uid://cb32swj3ra2cv" path="res://src/items/inventory.gd" id="18_inv"]
 
 [sub_resource type="Resource" id="Resource_ejvt7"]
 script = ExtResource("2_2rfnl")
@@ -43,15 +45,15 @@ target_position = Vector3(0, 0, -3)
 
 [node name="AudioListener3D" type="AudioListener3D" parent="CameraPivot/Camera3D" unique_id=1854838571]
 
-[node name="Hands" type="Node3D" parent="CameraPivot" unique_id=155881976]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.4, -0.5)
+[node name="Hands" type="Node3D" parent="CameraPivot/Camera3D" unique_id=155881976]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.39999998, -0.5)
 script = ExtResource("3_hands")
 
-[node name="RightHand" type="Node3D" parent="CameraPivot/Hands" unique_id=895620812]
+[node name="RightHand" type="Node3D" parent="CameraPivot/Camera3D/Hands" unique_id=895620812]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.4, 0, 0)
 script = ExtResource("4_hand")
 
-[node name="LeftHand" type="Node3D" parent="CameraPivot/Hands" unique_id=1345695830]
+[node name="LeftHand" type="Node3D" parent="CameraPivot/Camera3D/Hands" unique_id=1345695830]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.4, 0, 0)
 script = ExtResource("4_hand")
 is_right_hand = false
@@ -92,5 +94,13 @@ follow_viewport_enabled = true
 [node name="PauseMenu" parent="CanvasLayer" unique_id=200788651 instance=ExtResource("15_u15jt")]
 visible = false
 
+[node name="InventoryScreen" parent="CanvasLayer" unique_id=1243742253 instance=ExtResource("17_oyld2")]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 0
+
 [node name="FootstepsPlayer" type="AudioStreamPlayer3D" parent="." unique_id=1274705915]
 stream = ExtResource("17_phnc4")
+
+[node name="Inventory" type="Node" parent="." unique_id=1274705916]
+script = ExtResource("18_inv")

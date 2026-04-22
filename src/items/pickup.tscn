@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3 uid="uid://cbvxpckpickup"]
+
+[ext_resource type="Script" path="res://src/items/pickup.gd" id="1_pickup"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_pick"]
+size = Vector3(0.4, 0.4, 0.4)
+
+[node name="Pickup" type="RigidBody3D" groups=["interactable"]]
+script = ExtResource("1_pickup")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_pick")
