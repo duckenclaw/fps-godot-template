@@ -1,16 +1,9 @@
-Weapon (subclass of item class)
-- type: melee-weapon/ranged-weapon (assigns this value in item class)
-- grip: one-handed/two-handed
-- damage: int
-- clip-size: int
-- ammo: string
 
-crossbow:
-- type: ranged-weapon
-- grip: one-handed
-- damage: 10
-- clip-size: 1
-- ammo: bolt
+
+## Melee weapons
+
+Each Hand should include a CollisionShape3D with a shape of a thin and long cube, as well as an AnimationPlayer3D with different animations for attacks. 
+Whenever a player attacks, the Collision Shape should check for any collisions until the animation has ended. If the a collision object is in enemy group, then it receives damage, if it's not "stagger" animation is played.
 
 sword:
 - type: melee-weapon
@@ -21,3 +14,4 @@ greatsword [2x4]:
 - type: melee-weapon
 - grip: two-handed
 - damage: 35
+
