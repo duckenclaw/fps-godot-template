@@ -1,7 +1,8 @@
 class_name Hands
 extends Node3D
 
-## Hands manager - manages both left and right hands
+## Hands manager — manages both left and right hands and exposes resource-aware
+## equip helpers used by the player.
 
 @onready var right_hand: Hand = $RightHand
 @onready var left_hand: Hand = $LeftHand
@@ -9,40 +10,36 @@ extends Node3D
 func _ready() -> void:
 	pass
 
-## Handle left hand attack input
+## Trigger an attack with the left hand.
 func use_left_hand() -> void:
 	if left_hand:
 		left_hand.attack()
 
-## Handle right hand attack input
+## Trigger an attack with the right hand.
 func use_right_hand() -> void:
 	if right_hand:
 		right_hand.attack()
 
-## Equip item to right hand
-func equip_right_hand(item: Node3D) -> void:
+## Equip an ItemResource to the right hand (spawns its model).
+func equip_right_hand(item_res: ItemResource) -> void:
 	if right_hand:
-		right_hand.equip_item(item)
+		right_hand.equip_resource(item_res)
 
-## Equip item to left hand
-func equip_left_hand(item: Node3D) -> void:
+## Equip an ItemResource to the left hand.
+func equip_left_hand(item_res: ItemResource) -> void:
 	if left_hand:
-		left_hand.equip_item(item)
+		left_hand.equip_resource(item_res)
 
-## Unequip right hand
 func unequip_right_hand() -> void:
 	if right_hand:
 		right_hand.unequip_item()
 
-## Unequip left hand
 func unequip_left_hand() -> void:
 	if left_hand:
 		left_hand.unequip_item()
 
-## Get right hand reference
 func get_right_hand() -> Hand:
 	return right_hand
 
-## Get left hand reference
 func get_left_hand() -> Hand:
 	return left_hand

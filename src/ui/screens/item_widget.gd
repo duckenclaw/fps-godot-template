@@ -108,6 +108,10 @@ func _make_custom_tooltip(_for_text: String) -> Object:
 	_add_info(vb, "Price: %.2f \u20AC" % item.price)
 	_add_info(vb, "Slots: %d x %d" % [item.slots.x, item.slots.y])
 	_add_info(vb, "Stack: %d / %d" % [s.count, item.max_stack])
+	if item.is_weapon():
+		_add_info(vb, "Grip: %s" % String(item.grip))
+		_add_info(vb, "Damage: %.0f" % item.damage)
+		_add_info(vb, "Speed: %.2fx" % item.speed)
 	if item.description != "":
 		var desc: Label = Label.new()
 		desc.text = item.description

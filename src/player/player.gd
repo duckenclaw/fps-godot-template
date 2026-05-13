@@ -373,6 +373,7 @@ func resume_game() -> void:
 # ====================
 
 ## Equip the item bound to a quick slot. If it's already held, move it to the other hand.
+## Two-handed weapons go exclusively to the right hand and force the left hand empty.
 func equip_from_quick(quick_idx: int) -> void:
 	if inventory == null or hands == null:
 		return
@@ -380,18 +381,30 @@ func equip_from_quick(quick_idx: int) -> void:
 	if item == null:
 		return
 
-	# Already in one of the hands -> move to the other hand.
+	# Two-handed weapons: right hand only, left must be empty.
+	if item.is_two_handed():
+		if item == equipped_right_item:
+			_unequip_right()
+		else:
+			_unequip_left()
+			_equip_right(item)
+		return
+
+	# Already in one of the hands -> swap to the other.
 	if item == equipped_right_item:
 		_unequip_right()
 		_equip_left(item)
 		return
 	if item == equipped_left_item:
 		_unequip_left()
+		# Free up the right hand if a two-handed weapon is currently held.
+		if equipped_right_item and equipped_right_item.is_two_handed():
+			_unequip_right()
 		_equip_right(item)
 		return
 
-	# Fresh equip -> right for weapons, left for everything else.
-	if item.type == &"weapon":
+	# Fresh equip: weapons (ranged or melee) go right, everything else left.
+	if item.is_weapon():
 		_equip_right(item)
 	else:
 		_equip_left(item)
@@ -399,22 +412,21 @@ func equip_from_quick(quick_idx: int) -> void:
 func _equip_right(item: ItemResource) -> void:
 	if item == null or item.model == null:
 		return
+	# Right slot is exclusive when occupied by a two-handed weapon.
 	_unequip_right()
-	var inst: Node3D = item.model.instantiate() as Node3D
-	if inst == null:
-		return
-	hands.equip_right_hand(inst)
+	hands.equip_right_hand(item)
 	equipped_right_item = item
 	_refresh_quick_hud()
 
 func _equip_left(item: ItemResource) -> void:
 	if item == null or item.model == null:
 		return
-	_unequip_left()
-	var inst: Node3D = item.model.instantiate() as Node3D
-	if inst == null:
+	# Two-handed weapons cannot be placed in the left hand.
+	if item.is_two_handed():
+		_equip_right(item)
 		return
-	hands.equip_left_hand(inst)
+	_unequip_left()
+	hands.equip_left_hand(item)
 	equipped_left_item = item
 	_refresh_quick_hud()
 
