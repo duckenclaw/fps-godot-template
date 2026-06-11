@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemResource" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://src/items/item_resource.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://c2udbjnqq3bq0" path="res://assets/images/potion.png" id="2_icon"]
+[ext_resource type="PackedScene" uid="uid://vs0vaqwdec5q" path="res://assets/models/potion.glb" id="3_model"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"potion"
+display_name = "Potion"
+type = &"consumable"
+weight = 0.5
+price = 0.75
+slots = Vector2i(1, 1)
+icon = ExtResource("2_icon")
+model = ExtResource("3_model")
+max_stack = 99
+description = "A bubbling health potion."

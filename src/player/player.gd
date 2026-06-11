@@ -18,12 +18,21 @@ var stamina: float = 100.0
 @onready var camera: CameraController = $CameraPivot
 @onready var camera_3d: Camera3D = $CameraPivot/Camera3D
 @onready var interact_raycast: RayCast3D = $CameraPivot/Camera3D/InteractRayCast
-@onready var hands: Hands = $CameraPivot/Hands
+@onready var hands: Hands = $CameraPivot/Camera3D/Hands
 @onready var state_machine: StateMachine = $StateMachine
+@onready var inventory: Inventory = $Inventory
 
 # UI references
 @onready var hud: Control = $CanvasLayer/HUD if has_node("CanvasLayer/HUD") else null
 @onready var pause_menu: Control = $CanvasLayer/PauseMenu if has_node("CanvasLayer/PauseMenu") else null
+@onready var inventory_screen: InventoryScreen = $CanvasLayer/InventoryScreen if has_node("CanvasLayer/InventoryScreen") else null
+
+# Currently equipped items (ItemResource references)
+var equipped_left_item: ItemResource
+var equipped_right_item: ItemResource
+
+# Inventory open flag — gates input / physics the same way is_paused does.
+var is_inventory_open: bool = false
 
 # Input flags (set during input handling, used by states)
 var jump_pressed: bool = false
@@ -79,8 +88,21 @@ func _ready() -> void:
 	if pause_menu:
 		pause_menu.player = self
 
+	# Let hands aim with the camera and consume ammo from the inventory
+	if hands:
+		hands.setup(self, inventory)
+
+	# Wire inventory UI
+	if inventory_screen:
+		inventory_screen.bind(self)
+	if inventory:
+		inventory.changed.connect(_refresh_quick_hud)
+		inventory.quick_changed.connect(_refresh_quick_hud)
+		inventory.pickup_failed.connect(_on_inventory_pickup_failed)
+
 	# Update HUD
 	update_hud()
+	_refresh_quick_hud()
 
 	# Set initial height
 	set_player_height(NORMAL_HEIGHT)
@@ -88,11 +110,24 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	# Handle pause
 	if event.is_action_pressed("ui_cancel"):
+		if is_inventory_open and inventory_screen:
+			inventory_screen.close()
+			return
 		toggle_pause()
 		return
 
 	# Don't process other inputs when paused
 	if is_paused:
+		return
+
+	# Toggle inventory
+	if event.is_action_pressed("inventory"):
+		if inventory_screen:
+			inventory_screen.toggle()
+		return
+
+	# While inventory is open, only allow UI — block gameplay actions.
+	if is_inventory_open:
 		return
 
 	# Handle interact action
@@ -106,9 +141,19 @@ func _input(event: InputEvent) -> void:
 	if event.is_action_pressed("right_hand"):
 		hands.use_right_hand()
 
+	# Reload the right hand's ranged weapon
+	if event.is_action_pressed("reload"):
+		hands.reload_right_hand()
+
+	# Quick-equip
+	for i in 8:
+		if event.is_action_pressed("equip_%d" % (i + 1)):
+			equip_from_quick(i)
+			return
+
 func _physics_process(delta: float) -> void:
-	# Don't process physics when paused
-	if is_paused:
+	# Don't process physics when paused or inventory is open
+	if is_paused or is_inventory_open:
 		return
 
 	# Smoothly interpolate height
@@ -330,3 +375,87 @@ func resume_game() -> void:
 
 	if pause_menu:
 		pause_menu.visible = false
+
+# ====================
+# Inventory / Equip
+# ====================
+
+## Equip the item bound to a quick slot. If it's already held, move it to the other hand.
+## Two-handed weapons go exclusively to the right hand and force the left hand empty.
+func equip_from_quick(quick_idx: int) -> void:
+	if inventory == null or hands == null:
+		return
+	var item: ItemResource = inventory.get_quick_item(quick_idx)
+	if item == null:
+		return
+
+	# Two-handed weapons: right hand only, left must be empty.
+	if item.is_two_handed():
+		if item == equipped_right_item:
+			_unequip_right()
+		else:
+			_unequip_left()
+			_equip_right(item)
+		return
+
+	# Already in one of the hands -> swap to the other.
+	if item == equipped_right_item:
+		_unequip_right()
+		_equip_left(item)
+		return
+	if item == equipped_left_item:
+		_unequip_left()
+		# Free up the right hand if a two-handed weapon is currently held.
+		if equipped_right_item and equipped_right_item.is_two_handed():
+			_unequip_right()
+		_equip_right(item)
+		return
+
+	# Fresh equip: weapons (ranged or melee) go right, everything else left.
+	if item.is_weapon():
+		_equip_right(item)
+	else:
+		_equip_left(item)
+
+func _equip_right(item: ItemResource) -> void:
+	if item == null or item.model == null:
+		return
+	# Right slot is exclusive when occupied by a two-handed weapon.
+	_unequip_right()
+	hands.equip_right_hand(item)
+	equipped_right_item = item
+	_refresh_quick_hud()
+
+func _equip_left(item: ItemResource) -> void:
+	if item == null or item.model == null:
+		return
+	# Two-handed weapons cannot be placed in the left hand.
+	if item.is_two_handed():
+		_equip_right(item)
+		return
+	_unequip_left()
+	hands.equip_left_hand(item)
+	equipped_left_item = item
+	_refresh_quick_hud()
+
+func _unequip_right() -> void:
+	if equipped_right_item == null:
+		return
+	hands.unequip_right_hand()
+	equipped_right_item = null
+
+func _unequip_left() -> void:
+	if equipped_left_item == null:
+		return
+	hands.unequip_left_hand()
+	equipped_left_item = null
+
+func _refresh_quick_hud() -> void:
+	if hud and hud.has_method("update_quick_bar"):
+		hud.update_quick_bar(inventory, equipped_left_item, equipped_right_item)
+
+func _on_inventory_pickup_failed(_item: ItemResource, _leftover: int) -> void:
+	if hud and hud.has_method("show_toast"):
+		hud.show_toast("Not enough space")
+	elif inventory_screen and inventory_screen.visible:
+		inventory_screen.show_pickup_failed()
