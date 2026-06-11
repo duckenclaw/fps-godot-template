@@ -88,6 +88,10 @@ func _ready() -> void:
 	if pause_menu:
 		pause_menu.player = self
 
+	# Let hands aim with the camera and consume ammo from the inventory
+	if hands:
+		hands.setup(self, inventory)
+
 	# Wire inventory UI
 	if inventory_screen:
 		inventory_screen.bind(self)
@@ -136,6 +140,10 @@ func _input(event: InputEvent) -> void:
 
 	if event.is_action_pressed("right_hand"):
 		hands.use_right_hand()
+
+	# Reload the right hand's ranged weapon
+	if event.is_action_pressed("reload"):
+		hands.reload_right_hand()
 
 	# Quick-equip
 	for i in 8:

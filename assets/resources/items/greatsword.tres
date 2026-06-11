@@ -1,8 +1,8 @@
-[gd_resource type="Resource" script_class="ItemResource" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="ItemResource" load_steps=4 format=3 uid="uid://deqakytyh8hn4"]
 
-[ext_resource type="Script" path="res://src/items/item_resource.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://hqaw5na435yt" path="res://assets/images/sword.png" id="2_icon"]
-[ext_resource type="PackedScene" uid="uid://c1vq15bsh0b51" path="res://assets/models/sword.glb" id="3_model"]
+[ext_resource type="Texture2D" uid="uid://buoedjb0xftkr" path="res://assets/images/greatsword.png" id="1_6n1we"]
+[ext_resource type="Script" uid="uid://duqff7yvx62ta" path="res://src/items/item_resource.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://dlimm25nyck0b" path="res://assets/models/greatsword.glb" id="2_a0gnb"]
 
 [resource]
 script = ExtResource("1_script")
@@ -12,10 +12,11 @@ type = &"melee-weapon"
 weight = 8.0
 price = 15.0
 slots = Vector2i(2, 4)
-icon = ExtResource("2_icon")
-model = ExtResource("3_model")
-max_stack = 1
+icon = ExtResource("1_6n1we")
+model = ExtResource("2_a0gnb")
 description = "A massive two-handed blade. Slower, but devastating."
 grip = &"two-handed"
 speed = 0.75
 damage = 35.0
+attack_animation = &"right_slash"
+range = 2.0

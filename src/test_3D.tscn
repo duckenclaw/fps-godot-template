@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://crk1dyw7mn53n"]
+[gd_scene load_steps=12 format=3 uid="uid://crk1dyw7mn53n"]
 
 [ext_resource type="PackedScene" uid="uid://yy8qdtf7sruo" path="res://src/environments/test_environment.tscn" id="1_bww5v"]
 [ext_resource type="PackedScene" uid="uid://ct7eavw7p0ci3" path="res://src/player/player.tscn" id="2_abjwo"]
@@ -6,6 +6,8 @@
 [ext_resource type="Resource" path="res://assets/resources/items/sword.tres" id="4_yr14f"]
 [ext_resource type="Resource" path="res://assets/resources/items/crossbow.tres" id="5_o154w"]
 [ext_resource type="Resource" path="res://assets/resources/items/potion.tres" id="6_4jgn1"]
+[ext_resource type="Resource" uid="uid://deqakytyh8hn4" path="res://assets/resources/items/greatsword.tres" id="7_gswrd"]
+[ext_resource type="Resource" path="res://assets/resources/items/bolt.tres" id="8_bolt"]
 
 [sub_resource type="Environment" id="Environment_r6u00"]
 background_mode = 1
@@ -47,3 +49,12 @@ count = 3
 [node name="Pickup4" parent="." unique_id=790733004 instance=ExtResource("3_ag7wx")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.171403, 0, -5.962908)
 item = ExtResource("6_4jgn1")
+
+[node name="Pickup5" parent="." instance=ExtResource("3_ag7wx")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, -6)
+item = ExtResource("7_gswrd")
+
+[node name="Pickup6" parent="." instance=ExtResource("3_ag7wx")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, 2.4)
+item = ExtResource("8_bolt")
+count = 5

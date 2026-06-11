@@ -159,6 +159,38 @@ func try_pickup(item: ItemResource, count: int = 1) -> int:
 		pickup_failed.emit(item, remaining)
 	return remaining
 
+## Total count of items with the given id across all stacks.
+func count_item(item_id: StringName) -> int:
+	var total: int = 0
+	for s in slots:
+		if s and s.item and s.item.id == item_id:
+			total += s.count
+	return total
+
+## Consume up to `amount` items with the given id across stacks.
+## Returns the amount actually consumed.
+func consume_item(item_id: StringName, amount: int = 1) -> int:
+	if amount <= 0:
+		return 0
+	var remaining: int = amount
+	for i in GRID_SIZE:
+		if remaining <= 0:
+			break
+		var s: InventorySlot = slots[i]
+		if s == null or s.item == null or s.item.id != item_id:
+			continue
+		var take: int = min(s.count, remaining)
+		s.count -= take
+		remaining -= take
+		if s.count <= 0:
+			_clear_rect(i, s.item.slots.x, s.item.slots.y)
+			slots[i] = null
+			_clear_quick_pointing_to(i)
+	var consumed: int = amount - remaining
+	if consumed > 0:
+		changed.emit()
+	return consumed
+
 ## Remove one item at the given cell. Returns the removed ItemResource or null.
 func remove_one(cell_index: int) -> ItemResource:
 	var anchor: int = get_anchor_of_cell(cell_index)

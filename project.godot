@@ -33,6 +33,7 @@ player=""
 enemy=""
 interactable=""
 character=""
+destructible=""
 
 [input]
 
