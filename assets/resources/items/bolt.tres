@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3 uid="uid://bolqa5kmc5nwi"]
 
-[ext_resource type="Script" path="res://src/items/item_resource.gd" id="1_script"]
-[ext_resource type="Texture2D" uid="uid://booy3uk4t4e2e" path="res://assets/images/crossbow.png" id="2_icon"]
+[ext_resource type="Texture2D" uid="uid://oeontma8uv73" path="res://assets/images/bolt.png" id="1_iqdy3"]
+[ext_resource type="Script" uid="uid://duqff7yvx62ta" path="res://src/items/item_resource.gd" id="1_script"]
 
 [resource]
 script = ExtResource("1_script")
@@ -10,7 +10,6 @@ display_name = "Bolt"
 type = &"ammo"
 weight = 0.1
 price = 0.5
-slots = Vector2i(1, 1)
-icon = ExtResource("2_icon")
+icon = ExtResource("1_iqdy3")
 max_stack = 20
 description = "A crossbow bolt."
