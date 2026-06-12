@@ -1,13 +1,15 @@
-[gd_scene load_steps=12 format=3 uid="uid://crk1dyw7mn53n"]
+[gd_scene load_steps=14 format=3 uid="uid://crk1dyw7mn53n"]
 
 [ext_resource type="PackedScene" uid="uid://yy8qdtf7sruo" path="res://src/environments/test_environment.tscn" id="1_bww5v"]
 [ext_resource type="PackedScene" uid="uid://ct7eavw7p0ci3" path="res://src/player/player.tscn" id="2_abjwo"]
 [ext_resource type="PackedScene" uid="uid://cbvxpckpickup" path="res://src/items/pickup.tscn" id="3_ag7wx"]
-[ext_resource type="Resource" path="res://assets/resources/items/sword.tres" id="4_yr14f"]
-[ext_resource type="Resource" path="res://assets/resources/items/crossbow.tres" id="5_o154w"]
-[ext_resource type="Resource" path="res://assets/resources/items/potion.tres" id="6_4jgn1"]
+[ext_resource type="Resource" uid="uid://c0wajdxrlhlh3" path="res://assets/resources/items/sword.tres" id="4_yr14f"]
+[ext_resource type="Resource" uid="uid://bp2rrhq538lev" path="res://assets/resources/items/crossbow.tres" id="5_o154w"]
+[ext_resource type="Resource" uid="uid://bcws7xybsm1oj" path="res://assets/resources/items/potion.tres" id="6_4jgn1"]
 [ext_resource type="Resource" uid="uid://deqakytyh8hn4" path="res://assets/resources/items/greatsword.tres" id="7_gswrd"]
-[ext_resource type="Resource" path="res://assets/resources/items/bolt.tres" id="8_bolt"]
+[ext_resource type="Resource" uid="uid://bolqa5kmc5nwi" path="res://assets/resources/items/bolt.tres" id="8_bolt"]
+[ext_resource type="PackedScene" uid="uid://bnqvqto31x45a" path="res://src/objects/door.tscn" id="9_door"]
+[ext_resource type="PackedScene" uid="uid://c8movablebox01" path="res://src/objects/movable_box.tscn" id="10_box"]
 
 [sub_resource type="Environment" id="Environment_r6u00"]
 background_mode = 1
@@ -33,28 +35,34 @@ compositor = SubResource("Compositor_bww5v")
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=602512710]
 transform = Transform3D(0.14644662, 0.8535533, -0.49999997, -0.49999997, 0.49999997, 0.70710677, 0.8535533, 0.14644662, 0.49999997, 0, 7.2557898, 0)
 
-[node name="Pickup" parent="." unique_id=1114326567 instance=ExtResource("3_ag7wx")]
+[node name="SwordPickup" parent="." unique_id=1114326567 groups=["movable"] instance=ExtResource("3_ag7wx")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -6)
 item = ExtResource("4_yr14f")
 
-[node name="Pickup2" parent="." unique_id=812373941 instance=ExtResource("3_ag7wx")]
+[node name="CrossbowPickup" parent="." unique_id=812373941 groups=["movable"] instance=ExtResource("3_ag7wx")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.743794, 0, 2.395584)
 item = ExtResource("5_o154w")
 
-[node name="Pickup3" parent="." unique_id=1390508441 instance=ExtResource("3_ag7wx")]
+[node name="PotionPickup1" parent="." unique_id=1390508441 groups=["movable"] instance=ExtResource("3_ag7wx")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.962486, 2, -0.011565685)
 item = ExtResource("6_4jgn1")
 count = 3
 
-[node name="Pickup4" parent="." unique_id=790733004 instance=ExtResource("3_ag7wx")]
+[node name="PotionPickup2" parent="." unique_id=790733004 groups=["movable"] instance=ExtResource("3_ag7wx")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.171403, 0, -5.962908)
 item = ExtResource("6_4jgn1")
 
-[node name="Pickup5" parent="." instance=ExtResource("3_ag7wx")]
+[node name="GreatswordPickup" parent="." unique_id=1908041779 instance=ExtResource("3_ag7wx")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, -6)
 item = ExtResource("7_gswrd")
 
-[node name="Pickup6" parent="." instance=ExtResource("3_ag7wx")]
+[node name="BoltPickup" parent="." unique_id=2132887619 instance=ExtResource("3_ag7wx")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, 2.4)
 item = ExtResource("8_bolt")
 count = 5
+
+[node name="Door" parent="." instance=ExtResource("9_door")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, -3)
+
+[node name="MovableBox" parent="." instance=ExtResource("10_box")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, -3)

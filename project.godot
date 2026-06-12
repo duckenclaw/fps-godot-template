@@ -34,6 +34,7 @@ enemy=""
 interactable=""
 character=""
 destructible=""
+movable=""
 
 [input]
 

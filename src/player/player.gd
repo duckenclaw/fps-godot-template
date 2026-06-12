@@ -19,6 +19,8 @@ var stamina: float = 100.0
 @onready var camera_3d: Camera3D = $CameraPivot/Camera3D
 @onready var interact_raycast: RayCast3D = $CameraPivot/Camera3D/InteractRayCast
 @onready var hands: Hands = $CameraPivot/Camera3D/Hands
+@onready var hold_point: Node3D = $CameraPivot/Camera3D/HoldPoint
+@onready var grab_controller: GrabController = $GrabController
 @onready var state_machine: StateMachine = $StateMachine
 @onready var inventory: Inventory = $Inventory
 
@@ -38,6 +40,13 @@ var is_inventory_open: bool = false
 var jump_pressed: bool = false
 var dash_pressed: bool = false
 var crouch_pressed: bool = false
+
+# Interact tap-vs-hold tracking: a quick tap picks an item up into the inventory,
+# while holding the button grabs a "movable" object (see _physics_process).
+const INTERACT_HOLD_TIME: float = 0.25
+var _interact_pressed: bool = false   # button is down and being tracked
+var _interact_time: float = 0.0       # how long it has been held this press
+var _interact_consumed: bool = false  # this press already grabbed/dropped — no tap pickup
 
 # Crouch toggle state
 var is_crouch_toggled: bool = false
@@ -92,6 +101,10 @@ func _ready() -> void:
 	if hands:
 		hands.setup(self, inventory)
 
+	# Let the grab controller manipulate "movable" objects in front of the camera
+	if grab_controller:
+		grab_controller.setup(camera_3d, hold_point, hands)
+
 	# Wire inventory UI
 	if inventory_screen:
 		inventory_screen.bind(self)
@@ -130,16 +143,33 @@ func _input(event: InputEvent) -> void:
 	if is_inventory_open:
 		return
 
-	# Handle interact action
+	# Interact: tap = pick item into inventory; hold = grab a movable object.
+	# While already holding a movable object, a press drops it.
 	if event.is_action_pressed("interact"):
-		try_interact()
+		if grab_controller.is_holding():
+			grab_controller.drop()
+			_interact_consumed = true
+		_interact_pressed = true
+		_interact_time = 0.0
+	elif event.is_action_released("interact"):
+		# A quick release that didn't grab/drop counts as a tap → pick up.
+		if _interact_pressed and not _interact_consumed and not grab_controller.is_holding():
+			try_pickup()
+		_interact_pressed = false
+		_interact_consumed = false
 
-	# Handle hand actions
+	# Handle hand actions — while holding, the hands instead drop/throw the object.
 	if event.is_action_pressed("left_hand"):
-		hands.use_left_hand()
+		if grab_controller.is_holding():
+			grab_controller.drop()
+		else:
+			hands.use_left_hand()
 
 	if event.is_action_pressed("right_hand"):
-		hands.use_right_hand()
+		if grab_controller.is_holding():
+			grab_controller.throw()
+		else:
+			hands.use_right_hand()
 
 	# Reload the right hand's ranged weapon
 	if event.is_action_pressed("reload"):
@@ -158,6 +188,19 @@ func _physics_process(delta: float) -> void:
 
 	# Smoothly interpolate height
 	update_height_smooth(delta)
+
+	# Once interact has been held long enough, grab the movable object in view.
+	if _interact_pressed and not Input.is_action_pressed("interact"):
+		# Release was swallowed (e.g. inventory opened mid-press) — reset tracking.
+		_interact_pressed = false
+		_interact_consumed = false
+	elif _interact_pressed and not _interact_consumed and not grab_controller.is_holding():
+		_interact_time += delta
+		if _interact_time >= INTERACT_HOLD_TIME:
+			var movable: Node3D = get_movable_in_view()
+			if movable:
+				grab_controller.grab(movable)
+				_interact_consumed = true
 
 	# Update input flags for states to use
 	jump_pressed = Input.is_action_just_pressed("jump")
@@ -191,12 +234,20 @@ func get_move_direction() -> Vector3:
 	# Calculate movement direction
 	return (forward * input_dir.y + right * input_dir.x).normalized()
 
-## Try to interact with object in front of player
-func try_interact() -> void:
+## Tap interact: trigger the object's interact() (e.g. pick a Pickup into inventory).
+func try_pickup() -> void:
 	if interact_raycast.is_colliding():
 		var collider = interact_raycast.get_collider()
 		if collider and collider.has_method("interact"):
 			collider.interact()
+
+## Return the "movable" object currently under the interact ray, if any.
+func get_movable_in_view() -> Node3D:
+	if interact_raycast.is_colliding():
+		var collider = interact_raycast.get_collider()
+		if collider and collider.is_in_group(&"movable"):
+			return collider
+	return null
 
 ## Setup wallrun detection raycasts
 func setup_wallrun_raycasts() -> void:
