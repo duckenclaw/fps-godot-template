@@ -1,4 +1,4 @@
-[gd_scene load_steps=29 format=3 uid="uid://ct7eavw7p0ci3"]
+[gd_scene load_steps=30 format=3 uid="uid://ct7eavw7p0ci3"]
 
 [ext_resource type="Script" uid="uid://f6hmn8wpksud" path="res://src/player/player.gd" id="1_player"]
 [ext_resource type="Script" uid="uid://b8lpvad5c77ty" path="res://src/player/player_config.gd" id="2_2rfnl"]
@@ -19,7 +19,8 @@
 [ext_resource type="PackedScene" uid="uid://bm7la4xskxhg3" path="res://src/ui/screens/inventory_screen.tscn" id="17_oyld2"]
 [ext_resource type="AudioStream" uid="uid://cfxtnb6hisoi2" path="res://assets/sounds/steps/step0.wav" id="17_phnc4"]
 [ext_resource type="Script" uid="uid://cb32swj3ra2cv" path="res://src/items/inventory.gd" id="18_inv"]
-[ext_resource type="Script" path="res://src/player/hands_camera.gd" id="19_handcam"]
+[ext_resource type="Script" uid="uid://dsef838gui3e5" path="res://src/player/hands_camera.gd" id="19_handcam"]
+[ext_resource type="Script" path="res://src/player/grab_controller.gd" id="20_grab"]
 
 [sub_resource type="Resource" id="Resource_ejvt7"]
 script = ExtResource("2_2rfnl")
@@ -337,6 +338,9 @@ cull_mask = 1048573
 target_position = Vector3(0, 0, -3)
 collision_mask = 4
 
+[node name="HoldPoint" type="Marker3D" parent="CameraPivot/Camera3D" unique_id=318509250]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.5)
+
 [node name="AudioListener3D" type="AudioListener3D" parent="CameraPivot/Camera3D" unique_id=1854838571]
 
 [node name="Hands" type="Node3D" parent="CameraPivot/Camera3D" unique_id=155881976]
@@ -414,6 +418,9 @@ stream = ExtResource("17_phnc4")
 
 [node name="Inventory" type="Node" parent="." unique_id=1274705916]
 script = ExtResource("18_inv")
+
+[node name="GrabController" type="Node" parent="." unique_id=484999722]
+script = ExtResource("20_grab")
 
 [node name="HandsLayer" type="CanvasLayer" parent="." unique_id=682120979]
 layer = 0
