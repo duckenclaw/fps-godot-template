@@ -57,6 +57,9 @@ var is_falling_from_jump: bool = false
 # Game state
 var is_paused: bool = false
 
+# Stable key used by SaveManager so the player persists across scenes/saves.
+var save_id: String = "player"
+
 # Wallrun detection
 @onready var wallrun_raycast_right: RayCast3D = RayCast3D.new()
 @onready var wallrun_raycast_left: RayCast3D = RayCast3D.new()
@@ -80,6 +83,9 @@ func _ready() -> void:
 	config.invert_camera_x = GameSettings.invert_camera_x
 	config.invert_camera_y = GameSettings.invert_camera_y
 	config.difficulty = GameSettings.difficulty
+
+	# Register for the save system (see save_data/load_data below).
+	add_to_group("saveable")
 
 	# Setup wallrun raycasts
 	setup_wallrun_raycasts()
@@ -127,6 +133,17 @@ func _input(event: InputEvent) -> void:
 			inventory_screen.close()
 			return
 		toggle_pause()
+		return
+
+	# Quick save / load (work even while paused above is handled separately).
+	if event.is_action_pressed("quicksave"):
+		SaveManager.save_game(0)
+		if hud and hud.has_method("show_toast"):
+			hud.show_toast("Game saved")
+		return
+	if event.is_action_pressed("quickload"):
+		if SaveManager.has_save(0):
+			SaveManager.load_game(0)
 		return
 
 	# Don't process other inputs when paused
@@ -355,9 +372,28 @@ func set_stamina(value: float) -> void:
 	stamina = clamp(value, 0, max_stamina)
 	update_hud()
 
-## Take damage
-func take_damage(amount: float) -> void:
+## Take damage. `source` is whoever dealt it (optional). Scales with difficulty,
+## announces on the EventBus, and triggers screen shake + a HUD damage flash.
+func take_damage(amount: float, source: Node = null) -> void:
+	if amount <= 0.0:
+		return
+	amount *= _difficulty_damage_multiplier()
 	set_health(health - amount)
+
+	EventBus.damage_dealt.emit(self, amount, source)
+
+	# Feedback: shake intensity scales with the hit, clamped to a sane range.
+	if camera and camera.has_method("add_shake"):
+		camera.add_shake(clampf(amount / 25.0, 0.15, 1.0))
+	if hud and hud.has_method("flash_damage"):
+		hud.flash_damage()
+
+## Incoming-damage multiplier from the difficulty setting (Easy 0.5x, Hard 1.5x).
+func _difficulty_damage_multiplier() -> float:
+	match GameSettings.difficulty:
+		"Easy": return 0.5
+		"Hard": return 1.5
+		_: return 1.0
 
 ## Heal player
 func heal(amount: float) -> void:
@@ -392,10 +428,63 @@ func update_hud() -> void:
 		hud.update_bar("mana", mana, max_mana)
 		hud.update_bar("stamina", stamina, max_stamina)
 
-## Called when player dies
+## Called when player dies. Announces on the EventBus, then respawns by reloading
+## the most recent save if one exists, otherwise restarts the current level.
 func die() -> void:
-	# TODO: Implement death logic
-	print("Player died")
+	EventBus.entity_died.emit(self)
+	if SaveManager.has_save(0):
+		SaveManager.load_game(0)
+	else:
+		SceneManager.reload_current_scene()
+
+# ====================
+# Save / Load (SaveManager "saveable" contract)
+# ====================
+
+## Serialise player state to a JSON-friendly dictionary.
+func save_data() -> Dictionary:
+	var items: Array = []
+	if inventory:
+		for anchor in inventory.all_anchors():
+			var slot = inventory.get_slot_at_anchor(anchor)
+			if slot and not slot.is_empty() and slot.item:
+				items.append({"id": String(slot.item.id), "count": slot.count})
+	return {
+		"pos": [global_position.x, global_position.y, global_position.z],
+		"yaw": rotation.y,
+		"health": health,
+		"mana": mana,
+		"stamina": stamina,
+		"items": items,
+	}
+
+## Restore player state from a dictionary produced by save_data().
+func load_data(data: Dictionary) -> void:
+	var p = data.get("pos", null)
+	if p is Array and p.size() == 3:
+		global_position = Vector3(p[0], p[1], p[2])
+		velocity = Vector3.ZERO
+	if data.has("yaw"):
+		rotation.y = float(data["yaw"])
+		if camera:
+			camera.rotation_y = float(data["yaw"])
+
+	health = float(data.get("health", health))
+	mana = float(data.get("mana", mana))
+	stamina = float(data.get("stamina", stamina))
+
+	# Rebuild inventory contents from saved item ids (exact grid layout is not
+	# preserved — items are re-added via try_pickup).
+	if inventory and data.has("items"):
+		for anchor in inventory.all_anchors():
+			inventory.remove_stack(anchor)
+		for entry in data["items"]:
+			var item := ItemDB.get_item(StringName(entry.get("id", "")))
+			if item:
+				inventory.try_pickup(item, int(entry.get("count", 1)))
+
+	update_hud()
+	_refresh_quick_hud()
 
 # ====================
 # Pause System

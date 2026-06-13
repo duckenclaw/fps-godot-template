@@ -17,12 +17,32 @@ const QUICK_SLOT_SIZE: Vector2 = Vector2(64, 64)
 
 var _quick_widgets: Array = []  # Array of {root, icon, label, outline}
 var _toast_timer: float = 0.0
+var _damage_flash: ColorRect
 
 func _ready() -> void:
 	_build_quick_bar()
+	_build_damage_flash()
 	if toast_label:
 		toast_label.visible = false
 	set_process(true)
+
+## Full-screen red overlay used for damage feedback. Built in code so the HUD
+## scene needs no extra nodes.
+func _build_damage_flash() -> void:
+	_damage_flash = ColorRect.new()
+	_damage_flash.color = Color(0.6, 0.0, 0.0, 0.0)
+	_damage_flash.anchor_right = 1.0
+	_damage_flash.anchor_bottom = 1.0
+	_damage_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_damage_flash)
+
+## Flash the screen red briefly (call from the player on taking damage).
+func flash_damage(strength: float = 0.4) -> void:
+	if _damage_flash == null:
+		return
+	_damage_flash.color = Color(0.6, 0.0, 0.0, strength)
+	var tween := create_tween()
+	tween.tween_property(_damage_flash, "color:a", 0.0, 0.5)
 
 func _process(delta: float) -> void:
 	if _toast_timer > 0.0:

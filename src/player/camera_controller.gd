@@ -34,6 +34,12 @@ const STEP_PITCH_MAX: float = 1.1
 # FOV
 var current_fov: float = 75.0
 
+# Screen shake (applied via the camera's frustum offset so it never fights the
+# rotation/bob/tilt logic above). add_shake() accumulates strength; it decays.
+var shake_strength: float = 0.0
+const SHAKE_DECAY: float = 5.0
+const SHAKE_MAX_OFFSET: float = 0.25
+
 func _ready() -> void:
 	# Capture mouse
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -86,6 +92,9 @@ func _process(delta: float) -> void:
 
 	# Update FOV based on speed
 	update_fov(delta)
+
+	# Update screen shake
+	update_shake(delta)
 
 ## Rotate camera based on mouse movement
 func rotate_camera(relative: Vector2) -> void:
@@ -249,7 +258,21 @@ func play_jump_sound() -> void:
 	# Play the sound
 	footsteps_player.play()
 
-## Screen shake effect
-func shake(intensity: float, duration: float) -> void:
-	# TODO: Implement screen shake
-	pass
+## Add screen shake. `amount` is roughly 0..1; calls stack and decay over time.
+func add_shake(amount: float) -> void:
+	shake_strength = min(shake_strength + amount, 1.0)
+
+## Backwards-compatible alias (older states may call shake()).
+func shake(intensity: float, _duration: float = 0.0) -> void:
+	add_shake(intensity)
+
+## Apply and decay the current shake via the camera's frustum offset.
+func update_shake(delta: float) -> void:
+	if shake_strength <= 0.0:
+		camera.h_offset = 0.0
+		camera.v_offset = 0.0
+		return
+	shake_strength = max(shake_strength - SHAKE_DECAY * delta, 0.0)
+	var s := shake_strength * shake_strength  # ease out
+	camera.h_offset = randf_range(-1.0, 1.0) * SHAKE_MAX_OFFSET * s
+	camera.v_offset = randf_range(-1.0, 1.0) * SHAKE_MAX_OFFSET * s

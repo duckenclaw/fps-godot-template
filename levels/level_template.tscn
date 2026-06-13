@@ -1,0 +1,33 @@
+[gd_scene load_steps=4 format=3]
+
+; Starting point for new levels. Duplicate this file, then add geometry, pickups,
+; doors and movable objects. Register it with SceneManager (by id) and load it via
+; SceneManager.change_scene("<id>"). The SpawnPoint marker shows where the player
+; starts; move the Player node to match, or position the player from your own
+; spawn logic.
+
+[ext_resource type="PackedScene" uid="uid://yy8qdtf7sruo" path="res://src/environments/test_environment.tscn" id="1_env"]
+[ext_resource type="PackedScene" uid="uid://ct7eavw7p0ci3" path="res://src/player/player.tscn" id="2_player"]
+
+[sub_resource type="Environment" id="Environment_1"]
+background_mode = 1
+background_color = Color(0.488, 0.767, 1, 1)
+ambient_light_source = 3
+ambient_light_color = Color(1, 1, 1, 1)
+
+[node name="Level" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_1")
+
+[node name="Environment" parent="." instance=ExtResource("1_env")]
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.14644662, 0.8535533, -0.5, -0.5, 0.5, 0.70710677, 0.8535533, 0.14644662, 0.5, 0, 7.26, 0)
+shadow_enabled = true

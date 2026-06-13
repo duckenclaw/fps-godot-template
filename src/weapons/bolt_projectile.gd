@@ -56,7 +56,7 @@ func _physics_process(delta: float) -> void:
 	var collider: Node = hit.get("collider")
 	if collider and (collider.is_in_group(&"enemy") or collider.is_in_group(&"destructible")):
 		if collider.has_method("take_damage"):
-			collider.take_damage(damage)
+			collider.take_damage(damage, _shooter)
 	global_position = hit.get("position")
 	_stuck = true
 

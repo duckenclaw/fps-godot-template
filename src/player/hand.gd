@@ -209,7 +209,7 @@ func _handle_hit(target: Node) -> void:
 	var dmg: float = current_item_resource.damage if current_item_resource else 0.0
 	if target.is_in_group(&"enemy") or target.is_in_group(&"destructible"):
 		if target.has_method("take_damage"):
-			target.take_damage(dmg)
+			target.take_damage(dmg, owner)
 		hit_landed.emit(target, dmg)
 	else:
 		# Hit world geometry: end the swing early.

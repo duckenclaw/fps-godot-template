@@ -31,6 +31,17 @@ A comprehensive first-person shooter template for Godot 4.6+ featuring advanced 
 - Options screen with tabbed interface
 - Key rebinding system
 
+### Production Systems (FP Framework addon)
+- **EventBus:** decoupled, signal-driven gameplay events
+- **SceneManager:** async level loading with fade transitions and a level registry
+- **AudioManager:** music crossfade + pooled 2D/3D sound effects
+- **SaveManager:** slotted save/load of game state (quick save/load on F5/F9)
+- **Localization:** CSV-based translations with an in-game language selector
+- **Debug overlay:** toggleable FPS/watch display (F3)
+- Reusable **Health** component, **ItemDB** registry, and **Utils** helpers
+
+See **[FP Framework](docs/framework.md)** for details.
+
 ## Getting Started
 
 ### Prerequisites
@@ -58,6 +69,10 @@ A comprehensive first-person shooter template for Godot 4.6+ featuring advanced 
 | Interact | F | Interact with objects |
 | Tilt Left | Q | Camera tilt left |
 | Tilt Right | E | Camera tilt right |
+| Inventory | I | Open/close inventory |
+| Quick Save | F5 | Save game to slot 0 |
+| Quick Load | F9 | Load game from slot 0 |
+| Debug Overlay | F3 | Toggle the FPS / watch overlay |
 | Pause | Escape | Pause game |
 
 All controls can be rebound in the Options > Controls menu.
@@ -66,25 +81,31 @@ All controls can be rebound in the Options > Controls menu.
 
 ```
 fps-godot-template/
+├── addons/
+│   └── fp_framework/    # Reusable service layer plugin (autoload singletons)
 ├── assets/              # Game assets
 │   ├── images/          # Images and textures
-│   ├── resources/       # Godot resources (.tres)
+│   ├── localization/    # translations.csv + generated .translation files
+│   ├── resources/       # Godot resources (.tres) incl. items and bus layout
 │   └── styles/          # UI themes and styles
-├── docs/                # Documentation
-│   ├── player_controller.md           # Movement system overview
-│   ├── player_controller_technical.md # Movement technical docs
-│   ├── settings_system.md             # Settings overview
-│   ├── settings_system_technical.md   # Settings technical docs
-│   └── todo.md                        # Development roadmap
+├── docs/                # Documentation (see Documentation section below)
+├── levels/              # Level scenes (start from level_template.tscn)
 ├── src/                 # Source code
-│   ├── globals/         # Autoload singletons
-│   ├── player/          # Player controller and states
+│   ├── components/      # Reusable components (e.g. Health)
+│   ├── globals/         # GameSettings + Utils
+│   ├── items/           # Inventory, items, ItemDB, pickups
+│   ├── objects/         # World objects (doors, movable boxes)
+│   ├── player/          # Player controller and movement states
 │   ├── ui/              # User interface screens and components
-│   └── world/           # World scenes and objects
+│   └── weapons/         # Projectiles
 └── project.godot        # Godot project file
 ```
 
 ## Documentation
+
+### Framework & Workflow
+- **[FP Framework](docs/framework.md)** - The reusable service layer: EventBus, SceneManager, AudioManager, SaveManager, Localization, Debug, plus the Health/ItemDB/Utils building blocks
+- **[Making a Game](docs/making_a_game.md)** - End-to-end guide: import assets → define items → build levels → wire mechanics → ship
 
 ### Player Controller
 - **[Player Controller Overview](docs/player_controller.md)** - Quick reference for movement states and components
@@ -172,7 +193,7 @@ The template includes a 3-bus audio setup:
 - **Music:** Background music (child of Master)
 - **Effects:** Sound effects (child of Master)
 
-Assign your AudioStreamPlayers to the appropriate bus for proper volume control through the settings menu.
+Assign your AudioStreamPlayers to the appropriate bus for proper volume control through the settings menu. `master_bus.tres` is registered as the project's default bus layout. For runtime playback, prefer the **AudioManager** autoload (`play_music`, `play_sfx`, `play_sfx_3d`) — see [FP Framework](docs/framework.md#audiomanager).
 
 ## Contributing
 
@@ -187,6 +208,6 @@ This template is provided as-is for use in your projects. Feel free to modify an
 
 ## Version
 
-**Template Version:** 1.0
+**Template Version:** 1.1
 **Godot Version:** 4.6+
-**Last Updated:** 2025-03-25
+**Last Updated:** 2026-06-13

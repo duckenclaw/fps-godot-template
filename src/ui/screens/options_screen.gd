@@ -42,6 +42,10 @@ var temp_sensitivity: float = 0.003
 var temp_invert_x: bool = false
 var temp_invert_y: bool = false
 
+# Language selector (built at runtime so no scene edits are needed)
+var _language_option: OptionButton
+var _language_locales: Array[String] = []
+
 
 func _ready() -> void:
 	# Connect slider signals for live preview
@@ -52,8 +56,62 @@ func _ready() -> void:
 	effects_volume_slider.value_changed.connect(_on_effects_volume_changed)
 	sensitivity_slider.value_changed.connect(_on_sensitivity_changed)
 
+	# Build the language selector into the Gameplay tab
+	_build_language_selector()
+
 	# Load current settings from GameSettings
 	load_settings_to_ui()
+
+
+## Build a "Language" row in the Gameplay tab from the locales the Localization
+## autoload has loaded. Switching is applied live (and persisted) immediately.
+func _build_language_selector() -> void:
+	var flow := get_node_or_null("MarginContainer/OptionsContainer/Gameplay/MarginContainer/FlowContainer")
+	if flow == null or not is_instance_valid(Localization):
+		return
+
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+
+	var label := Label.new()
+	label.text = "Language"  # auto-translated by Godot
+	label.custom_minimum_size = Vector2(120, 0)
+	row.add_child(label)
+
+	_language_option = OptionButton.new()
+	_language_option.custom_minimum_size = Vector2(160, 0)
+	# Language names should display in their own language, so disable
+	# auto-translation on the dropdown items.
+	_language_option.auto_translate_mode = Node.AUTO_TRANSLATE_MODE_DISABLED
+
+	var locales: Array[String] = []
+	for l in Localization.get_languages():
+		locales.append(l)
+	locales.sort()
+
+	_language_locales = locales
+	var current := Localization.get_current_language()
+	for i in locales.size():
+		var code: String = locales[i]
+		_language_option.add_item(_locale_display_name(code))
+		if code == current or current.begins_with(code):
+			_language_option.selected = i
+
+	_language_option.item_selected.connect(_on_language_selected)
+	row.add_child(_language_option)
+	flow.add_child(row)
+
+
+func _on_language_selected(index: int) -> void:
+	if index >= 0 and index < _language_locales.size():
+		Localization.set_language(_language_locales[index])
+
+
+func _locale_display_name(code: String) -> String:
+	match code:
+		"en": return "English"
+		"es": return "Español"
+		_: return code
 
 
 ## Load settings from GameSettings singleton and update UI

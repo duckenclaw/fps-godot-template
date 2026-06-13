@@ -40,10 +40,8 @@ func _on_close_options():
 	show_main_menu()
 
 func _on_exit_to_main_menu():
-	# Unpause the game first
-	get_tree().paused = false
-	# Change to main menu scene
-	get_tree().change_scene_to_file("res://src/ui/main_menu.tscn")
+	# SceneManager unpauses and fades during the transition.
+	SceneManager.change_scene("main_menu")
 
 func _on_exit_to_desktop():
 	get_tree().quit()

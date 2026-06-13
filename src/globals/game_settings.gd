@@ -22,6 +22,9 @@ var mouse_sensitivity: float = 0.003
 var invert_camera_x: bool = false
 var invert_camera_y: bool = false
 
+# Localization
+var locale: String = "en"  # persisted; applied by the Localization autoload
+
 
 func _ready() -> void:
 	load_settings()
@@ -60,6 +63,9 @@ func load_settings() -> void:
 	invert_camera_x = config.get_value("gameplay", "invert_camera_x", false)
 	invert_camera_y = config.get_value("gameplay", "invert_camera_y", false)
 
+	# Localization
+	locale = config.get_value("localization", "locale", "en")
+
 	print("Settings loaded successfully")
 
 
@@ -85,6 +91,9 @@ func save_settings() -> void:
 	config.set_value("gameplay", "mouse_sensitivity", mouse_sensitivity)
 	config.set_value("gameplay", "invert_camera_x", invert_camera_x)
 	config.set_value("gameplay", "invert_camera_y", invert_camera_y)
+
+	# Localization
+	config.set_value("localization", "locale", locale)
 
 	var error = config.save(SETTINGS_PATH)
 	if error != OK:
