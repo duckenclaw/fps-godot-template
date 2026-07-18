@@ -15,8 +15,8 @@ func _ready():
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 func _input(event):
-	# Handle escape key when pause menu is visible
-	if visible and event.is_action_pressed("ui_cancel"):
+	# Close the pause menu on the pause button (Esc / Options) or B (ui_cancel).
+	if visible and (event.is_action_pressed("pause") or event.is_action_pressed("ui_cancel")):
 		_on_resume()
 		get_viewport().set_input_as_handled()
 

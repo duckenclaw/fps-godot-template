@@ -57,6 +57,11 @@ var is_falling_from_jump: bool = false
 # Game state
 var is_paused: bool = false
 
+# Physics frames to ignore discrete action presses for, set when a menu closes.
+# Stops the button that closed the menu (e.g. B, which is also dash) from leaking
+# a dash/jump/crouch into gameplay on the resume frame.
+var _suppress_action_frames: int = 0
+
 # Stable key used by SaveManager so the player persists across scenes/saves.
 var save_id: String = "player"
 
@@ -127,8 +132,9 @@ func _ready() -> void:
 	set_player_height(NORMAL_HEIGHT)
 
 func _input(event: InputEvent) -> void:
-	# Handle pause
-	if event.is_action_pressed("ui_cancel"):
+	# Handle pause (Esc / Options button). Deliberately NOT ui_cancel: B is bound to
+	# both ui_cancel and dash, so opening pause on ui_cancel made dashing pop the menu.
+	if event.is_action_pressed("pause"):
 		if is_inventory_open and inventory_screen:
 			inventory_screen.close()
 			return
@@ -219,10 +225,17 @@ func _physics_process(delta: float) -> void:
 				grab_controller.grab(movable)
 				_interact_consumed = true
 
-	# Update input flags for states to use
-	jump_pressed = Input.is_action_just_pressed("jump")
-	dash_pressed = Input.is_action_just_pressed("dash")
-	crouch_pressed = Input.is_action_just_pressed("crouch")
+	# Update input flags for states to use. Skip for a couple of frames right after a
+	# menu closes so the closing button press doesn't leak into gameplay.
+	if _suppress_action_frames > 0:
+		_suppress_action_frames -= 1
+		jump_pressed = false
+		dash_pressed = false
+		crouch_pressed = false
+	else:
+		jump_pressed = Input.is_action_just_pressed("jump")
+		dash_pressed = Input.is_action_just_pressed("dash")
+		crouch_pressed = Input.is_action_just_pressed("crouch")
 
 	# Toggle crouch state when crouch is pressed
 	if crouch_pressed:
@@ -511,9 +524,15 @@ func resume_game() -> void:
 	is_paused = false
 	get_tree().paused = false
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	suppress_action_input()
 
 	if pause_menu:
 		pause_menu.visible = false
+
+## Ignore discrete action presses (jump/dash/crouch) for a few physics frames.
+## Called when a menu closes so the closing button doesn't leak into gameplay.
+func suppress_action_input(frames: int = 2) -> void:
+	_suppress_action_frames = max(_suppress_action_frames, frames)
 
 # ====================
 # Inventory / Equip

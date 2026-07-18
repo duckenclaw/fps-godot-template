@@ -50,8 +50,8 @@ func _input(event: InputEvent) -> void:
 	if not visible:
 		return
 
-	# Close (Start / inventory button)
-	if event.is_action_pressed("inventory"):
+	# Close (inventory button, or the pause button)
+	if event.is_action_pressed("inventory") or event.is_action_pressed("pause"):
 		close()
 		get_viewport().set_input_as_handled()
 		return
@@ -207,6 +207,9 @@ func close() -> void:
 	if player and "is_inventory_open" in player:
 		player.is_inventory_open = false
 	get_tree().paused = false
+	# Stop the closing button (e.g. B, also dash) from leaking into gameplay.
+	if player and player.has_method("suppress_action_input"):
+		player.suppress_action_input()
 	_carrying = false
 	_carry_anchor = -1
 	if _cursor_panel:
