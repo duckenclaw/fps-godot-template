@@ -44,6 +44,7 @@ const REBINDABLE_ACTIONS: Array[String] = [
 
 func _ready() -> void:
 	load_settings()
+	_ensure_ui_joypad_bindings()
 	load_keybinds()
 	apply_graphics_settings()
 	apply_audio_settings()
@@ -129,6 +130,26 @@ func save_settings() -> void:
 		push_error("Failed to save settings: " + str(error))
 	else:
 		print("Settings saved successfully")
+
+
+## Godot's built-in UI directional actions (ui_up/down/left/right) ship with joypad
+## defaults, but ui_accept / ui_cancel do NOT — so a controller can move menu focus
+## but can't confirm/back out. Add the face-button bindings if they're missing.
+## (Button 0 = Cross/A = accept, Button 1 = Circle/B = cancel.)
+func _ensure_ui_joypad_bindings() -> void:
+	_add_joy_button_if_missing("ui_accept", JOY_BUTTON_A)
+	_add_joy_button_if_missing("ui_cancel", JOY_BUTTON_B)
+
+
+func _add_joy_button_if_missing(action: String, button: int) -> void:
+	if not InputMap.has_action(action):
+		return
+	for e in InputMap.action_get_events(action):
+		if e is InputEventJoypadButton and e.button_index == button:
+			return  # already bound
+	var ev := InputEventJoypadButton.new()
+	ev.button_index = button
+	InputMap.action_add_event(action, ev)
 
 
 ## Persist the current InputMap bindings for all rebindable actions.
