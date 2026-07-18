@@ -87,6 +87,9 @@ func _process(delta: float) -> void:
 	if player and player.is_paused:
 		return
 
+	# Gamepad right-stick look (mouse look is handled in _input)
+	update_gamepad_look(delta)
+
 	# Update tilt
 	update_tilt(delta)
 
@@ -98,18 +101,45 @@ func _process(delta: float) -> void:
 
 ## Rotate camera based on mouse movement
 func rotate_camera(relative: Vector2) -> void:
-	# Apply invert settings
+	# Apply invert settings, scale by mouse sensitivity, then hand to the shared core.
 	var horizontal_input = relative.x * (-1 if config.invert_camera_x else 1)
 	var vertical_input = relative.y * (-1 if config.invert_camera_y else 1)
+	apply_look(horizontal_input * config.mouse_sensitivity, vertical_input * config.mouse_sensitivity)
 
+## Apply an already-scaled look delta (radians) to body yaw and camera pitch.
+## Shared by the mouse and gamepad look paths.
+func apply_look(yaw_delta: float, pitch_delta: float) -> void:
 	# Horizontal rotation (Y axis) - rotate the player body
-	rotation_y -= horizontal_input * config.mouse_sensitivity
+	rotation_y -= yaw_delta
 	player.rotation.y = rotation_y
 
 	# Vertical rotation (X axis) - rotate the camera
-	rotation_x -= vertical_input * config.mouse_sensitivity
+	rotation_x -= pitch_delta
 	rotation_x = clamp(rotation_x, -PI/2, PI/2)
 	camera.rotation.x = rotation_x
+
+## Poll the right analog stick and rotate the camera (frame-rate independent).
+func update_gamepad_look(delta: float) -> void:
+	var look := Vector2(
+		Input.get_joy_axis(0, JOY_AXIS_RIGHT_X),
+		Input.get_joy_axis(0, JOY_AXIS_RIGHT_Y))
+
+	# Radial deadzone so stick drift never nudges the camera.
+	var magnitude := look.length()
+	if magnitude < config.controller_deadzone:
+		return
+
+	# Rescale past the deadzone to 0..1 and square for finer control near center.
+	var scaled := (magnitude - config.controller_deadzone) / (1.0 - config.controller_deadzone)
+	scaled = clamp(scaled, 0.0, 1.0)
+	look = look.normalized() * scaled * scaled
+
+	# Apply invert settings (X follows the mouse invert; Y has its own controller toggle).
+	var horizontal_input = look.x * (-1 if config.invert_camera_x else 1)
+	var vertical_input = look.y * (-1 if config.invert_controller_y else 1)
+
+	var speed := config.controller_look_sensitivity * delta
+	apply_look(horizontal_input * speed, vertical_input * speed)
 
 ## Update head tilt based on input
 func update_tilt(delta: float) -> void:
