@@ -434,6 +434,25 @@ visible = false
 layout_mode = 2
 metadata/_tab_index = 4
 
+[node name="Controller" type="TabBar" parent="MarginContainer/OptionsContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 5
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/OptionsContainer/Controller"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="FlowContainer" type="FlowContainer" parent="MarginContainer/OptionsContainer/Controller/MarginContainer"]
+layout_mode = 2
+theme_override_constants/h_separation = 200
+theme_override_constants/v_separation = 12
+vertical = true
+
 [node name="ButtonContainer" type="HBoxContainer" parent="MarginContainer" unique_id=270896259]
 layout_mode = 2
 size_flags_horizontal = 8

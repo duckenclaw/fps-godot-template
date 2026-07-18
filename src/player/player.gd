@@ -228,12 +228,11 @@ func _physics_process(delta: float) -> void:
 	if crouch_pressed:
 		is_crouch_toggled = not is_crouch_toggled
 
-## Get 2D input direction
+## Get 2D input direction.
+## Uses Input.get_vector so the analog stick gets proper circular deadzone handling
+## and graduated magnitude; keyboard still yields full-length cardinals/diagonals.
 func get_input_direction() -> Vector2:
-	var input_dir = Vector2.ZERO
-	input_dir.x = Input.get_action_strength("right") - Input.get_action_strength("left")
-	input_dir.y = Input.get_action_strength("forward") - Input.get_action_strength("backward")
-	return input_dir.normalized()
+	return Input.get_vector("left", "right", "backward", "forward")
 
 ## Get 3D movement direction relative to camera
 func get_move_direction() -> Vector3:

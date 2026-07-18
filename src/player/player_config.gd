@@ -38,6 +38,11 @@ extends Resource
 @export var mouse_sensitivity: float = 0.002
 @export var invert_camera_x: bool = false
 @export var invert_camera_y: bool = false
+
+# Controller / right-stick look
+@export var controller_look_sensitivity: float = 3.0
+@export var controller_deadzone: float = 0.2
+@export var invert_controller_y: bool = false
 @export var tilt_angle: float = 10.0
 @export var tilt_speed: float = 5.0
 @export var tilt_shift: float = 1.0  # Horizontal camera shift when tilting

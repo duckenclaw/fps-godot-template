@@ -3,6 +3,7 @@ extends Control
 # Node references
 @onready var main_container: Control = $MainContainer
 @onready var options_screen: Control = $OptionsScreen
+@onready var _resume_button: Button = $MainContainer/CenterContainer/VBoxContainer/ButtonsContainer/ResumeButton
 
 # Reference to the player (will be set by player script)
 var player: CharacterBody3D
@@ -23,6 +24,9 @@ func show_main_menu():
 	if options_screen:
 		options_screen.visible = false
 	main_container.visible = true
+	# Focus the first button so the pause menu is controller/keyboard navigable.
+	if _resume_button:
+		_resume_button.call_deferred("grab_focus")
 
 func show_options():
 	main_container.visible = false

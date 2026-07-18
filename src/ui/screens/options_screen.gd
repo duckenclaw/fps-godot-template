@@ -46,6 +46,26 @@ var temp_invert_y: bool = false
 var _language_option: OptionButton
 var _language_locales: Array[String] = []
 
+# Controller tab (rebind rows + settings, built at runtime into the Controller tab)
+const REBIND_SCENE: PackedScene = preload("res://src/ui/components/rebind_container.tscn")
+## Actions exposed for controller rebinding, in display order (movement uses the
+## left stick and is not button-rebindable, so it is omitted).
+const CONTROLLER_ACTIONS: Array[String] = [
+	"interact", "jump", "dash", "sprint", "crouch",
+	"right_hand", "left_hand", "reload", "inventory",
+	"tilt_left", "tilt_right",
+	"equip_1", "equip_2", "equip_3", "equip_4",
+]
+var _controller_sens_slider: HSlider
+var _controller_sens_value: Label
+var _controller_deadzone_slider: HSlider
+var _controller_deadzone_value: Label
+var _controller_invert_y_check: CheckButton
+
+var temp_controller_sens: float = 3.0
+var temp_controller_deadzone: float = 0.2
+var temp_controller_invert_y: bool = false
+
 
 func _ready() -> void:
 	# Connect slider signals for live preview
@@ -59,8 +79,28 @@ func _ready() -> void:
 	# Build the language selector into the Gameplay tab
 	_build_language_selector()
 
+	# Build the controller rebind rows + settings into the Controller tab
+	_build_controller_tab()
+
+	# Grab focus when opened so the tabs/controls are controller/keyboard navigable.
+	visibility_changed.connect(_on_visibility_changed)
+	if visible:
+		_grab_default_focus()
+
 	# Load current settings from GameSettings
 	load_settings_to_ui()
+
+
+func _on_visibility_changed() -> void:
+	if visible:
+		_grab_default_focus()
+
+
+## Focus the tab bar so left/right cycles tabs and down enters the tab content.
+func _grab_default_focus() -> void:
+	var tabs := get_node_or_null("MarginContainer/OptionsContainer")
+	if tabs:
+		tabs.call_deferred("grab_focus")
 
 
 ## Build a "Language" row in the Gameplay tab from the locales the Localization
@@ -112,6 +152,100 @@ func _locale_display_name(code: String) -> String:
 		"en": return "English"
 		"es": return "Español"
 		_: return code
+
+
+## Build the Controller tab: a controller rebind row per action, followed by
+## controller-specific settings (look sensitivity, invert Y, deadzone).
+func _build_controller_tab() -> void:
+	var flow := get_node_or_null("MarginContainer/OptionsContainer/Controller/MarginContainer/FlowContainer")
+	if flow == null:
+		return
+
+	for action_name in CONTROLLER_ACTIONS:
+		if not InputMap.has_action(action_name):
+			continue
+		var row := REBIND_SCENE.instantiate()
+		row.action = action_name
+		row.device_type = "controller"
+		flow.add_child(row)
+
+	# --- Controller settings ---
+	var sens := _add_controller_slider(flow, "Look Sensitivity", 1.0, 8.0, 0.5)
+	_controller_sens_slider = sens[0]
+	_controller_sens_value = sens[1]
+	_controller_sens_slider.value_changed.connect(_on_controller_sens_changed)
+
+	_controller_invert_y_check = _add_controller_check(flow, "Invert Look Y")
+	_controller_invert_y_check.toggled.connect(_on_controller_invert_y_toggled)
+
+	var dz := _add_controller_slider(flow, "Stick Deadzone", 0.0, 0.5, 0.05)
+	_controller_deadzone_slider = dz[0]
+	_controller_deadzone_value = dz[1]
+	_controller_deadzone_slider.value_changed.connect(_on_controller_deadzone_changed)
+
+
+## Create a "Label + HSlider + value" row. Returns [slider, value_label].
+func _add_controller_slider(parent: Node, label_text: String, min_v: float, max_v: float, step_v: float) -> Array:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 20)
+
+	var label := Label.new()
+	label.text = label_text
+	label.custom_minimum_size = Vector2(200, 60)
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	row.add_child(label)
+
+	var slider := HSlider.new()
+	slider.custom_minimum_size = Vector2(180, 60)
+	slider.min_value = min_v
+	slider.max_value = max_v
+	slider.step = step_v
+	slider.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(slider)
+
+	var value := Label.new()
+	value.custom_minimum_size = Vector2(60, 60)
+	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	value.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	row.add_child(value)
+
+	parent.add_child(row)
+	return [slider, value]
+
+
+## Create a "Label + CheckButton" row. Returns the CheckButton.
+func _add_controller_check(parent: Node, label_text: String) -> CheckButton:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 20)
+
+	var label := Label.new()
+	label.text = label_text
+	label.custom_minimum_size = Vector2(200, 60)
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	row.add_child(label)
+
+	var check := CheckButton.new()
+	check.custom_minimum_size = Vector2(40, 60)
+	row.add_child(check)
+
+	parent.add_child(row)
+	return check
+
+
+func _on_controller_sens_changed(value: float) -> void:
+	temp_controller_sens = value
+	if _controller_sens_value:
+		_controller_sens_value.text = "%.1f" % value
+
+
+func _on_controller_deadzone_changed(value: float) -> void:
+	temp_controller_deadzone = value
+	if _controller_deadzone_value:
+		_controller_deadzone_value.text = "%d%%" % round(value * 100.0)
+
+
+func _on_controller_invert_y_toggled(pressed: bool) -> void:
+	temp_controller_invert_y = pressed
 
 
 ## Load settings from GameSettings singleton and update UI
@@ -181,6 +315,17 @@ func load_settings_to_ui() -> void:
 
 	invert_x_check.button_pressed = temp_invert_x
 	invert_y_check.button_pressed = temp_invert_y
+
+	# Controller
+	temp_controller_sens = GameSettings.controller_look_sensitivity
+	temp_controller_deadzone = GameSettings.controller_deadzone
+	temp_controller_invert_y = GameSettings.invert_controller_y
+	if _controller_sens_slider:
+		_controller_sens_slider.value = temp_controller_sens
+		_controller_sens_value.text = "%.1f" % temp_controller_sens
+		_controller_deadzone_slider.value = temp_controller_deadzone
+		_controller_deadzone_value.text = "%d%%" % round(temp_controller_deadzone * 100.0)
+		_controller_invert_y_check.button_pressed = temp_controller_invert_y
 
 
 ## Graphics: Screen mode changed
@@ -261,6 +406,11 @@ func _on_apply_button_pressed() -> void:
 	GameSettings.invert_camera_x = invert_x_check.button_pressed
 	GameSettings.invert_camera_y = invert_y_check.button_pressed
 
+	# Controller
+	GameSettings.controller_look_sensitivity = temp_controller_sens
+	GameSettings.controller_deadzone = temp_controller_deadzone
+	GameSettings.invert_controller_y = temp_controller_invert_y
+
 	# Get difficulty from dropdown
 	GameSettings.difficulty = difficulty_option.get_item_text(difficulty_option.selected)
 
@@ -282,6 +432,9 @@ func _on_apply_button_pressed() -> void:
 	# Save settings to disk
 	GameSettings.save_settings()
 
+	# Persist any custom key/controller rebinds done in the Controls/Controller tabs
+	GameSettings.save_keybinds()
+
 	print("Settings applied and saved")
 
 
@@ -293,6 +446,9 @@ func update_player_config() -> void:
 		player.config.mouse_sensitivity = GameSettings.mouse_sensitivity
 		player.config.invert_camera_x = GameSettings.invert_camera_x
 		player.config.invert_camera_y = GameSettings.invert_camera_y
+		player.config.controller_look_sensitivity = GameSettings.controller_look_sensitivity
+		player.config.controller_deadzone = GameSettings.controller_deadzone
+		player.config.invert_controller_y = GameSettings.invert_controller_y
 		player.config.difficulty = GameSettings.difficulty
 
 		# Apply FOV to camera if it exists

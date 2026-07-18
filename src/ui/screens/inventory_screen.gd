@@ -26,6 +26,16 @@ var _snap_ghost: Panel
 
 var _toast_timer: float = 0.0
 
+# --- controller / keyboard navigation ---
+# A focus cursor drives the grid + quick bar for gamepad play; "carry" mode is the
+# controller equivalent of a mouse drag (grab an item, move the cursor, drop it).
+var _cursor_panel: Panel
+var _cursor_zone: String = "grid"   # "grid" | "quick"
+var _cursor_cell: int = 0           # grid cell 0..GRID_SIZE-1 (grid zone)
+var _cursor_quick: int = 0          # quick slot 0..QUICK_COUNT-1 (quick zone)
+var _carrying: bool = false
+var _carry_anchor: int = -1
+
 func _ready() -> void:
 	visible = false
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -39,9 +49,49 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	if not visible:
 		return
-	if event.is_action_pressed("ui_cancel") or event.is_action_pressed("inventory"):
+
+	# Close (Start / inventory button)
+	if event.is_action_pressed("inventory"):
 		close()
 		get_viewport().set_input_as_handled()
+		return
+
+	# Cancel a carry, or close if not carrying (B / Esc)
+	if event.is_action_pressed("ui_cancel"):
+		_cancel_or_close()
+		get_viewport().set_input_as_handled()
+		return
+
+	# Sort (X / reload button) — only react to the discrete press, not mouse.
+	if event.is_action_pressed("reload") and not event is InputEventMouseButton:
+		if inventory:
+			inventory.sort_by_type()
+		get_viewport().set_input_as_handled()
+		return
+
+	# Directional navigation (D-pad / left stick / arrow keys)
+	if event.is_action_pressed("ui_left"):
+		_move_cursor(-1, 0)
+		get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed("ui_right"):
+		_move_cursor(1, 0)
+		get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed("ui_up"):
+		_move_cursor(0, -1)
+		get_viewport().set_input_as_handled()
+		return
+	if event.is_action_pressed("ui_down"):
+		_move_cursor(0, 1)
+		get_viewport().set_input_as_handled()
+		return
+
+	# Activate: grab/drop an item, or equip a quick slot (A / Enter)
+	if event.is_action_pressed("ui_accept"):
+		_activate()
+		get_viewport().set_input_as_handled()
+		return
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_DRAG_END:
@@ -139,7 +189,17 @@ func open() -> void:
 	if player and "is_inventory_open" in player:
 		player.is_inventory_open = true
 	get_tree().paused = true
+	# Reset the navigation cursor to the first item (or top-left cell).
+	_carrying = false
+	_carry_anchor = -1
+	_cursor_zone = "grid"
+	var anchors: Array[int] = inventory.all_anchors() if inventory else []
+	_cursor_cell = anchors[0] if anchors.size() > 0 else 0
+	_cursor_quick = 0
+	_ensure_cursor_panel()
 	_refresh()
+	# Defer so container layout is settled before we read global rects.
+	call_deferred("_update_cursor")
 
 func close() -> void:
 	visible = false
@@ -147,6 +207,10 @@ func close() -> void:
 	if player and "is_inventory_open" in player:
 		player.is_inventory_open = false
 	get_tree().paused = false
+	_carrying = false
+	_carry_anchor = -1
+	if _cursor_panel:
+		_cursor_panel.visible = false
 	_hide_snap_ghost()
 
 func toggle() -> void:
@@ -163,6 +227,7 @@ func _refresh() -> void:
 		_weight_label.text = "Weight: %.2f kg" % inventory.total_weight()
 		_price_label.text = "Value: %.2f \u20AC" % inventory.total_price()
 	_update_outlines()
+	_update_cursor()
 
 func _update_outlines() -> void:
 	if player == null:
@@ -176,6 +241,201 @@ func _update_outlines() -> void:
 func _on_sort_pressed() -> void:
 	if inventory:
 		inventory.sort_by_type()
+
+# -------- controller / keyboard cursor --------
+
+func _ensure_cursor_panel() -> void:
+	if _cursor_panel != null:
+		return
+	_cursor_panel = Panel.new()
+	_cursor_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_cursor_panel.top_level = true  # position/size in global canvas space
+	_cursor_panel.visible = false
+	var sb: StyleBoxFlat = StyleBoxFlat.new()
+	sb.bg_color = Color(1, 0.85, 0.2, 0.15)
+	sb.border_color = Color(1, 0.85, 0.2, 1)
+	sb.set_border_width_all(3)
+	_cursor_panel.add_theme_stylebox_override("panel", sb)
+	add_child(_cursor_panel)
+
+## Reposition/recolor the focus cursor for the current zone and carry state.
+func _update_cursor() -> void:
+	if _cursor_panel == null or not visible or inventory == null:
+		return
+	var rect: Rect2 = _current_cursor_rect()
+	if rect.size == Vector2.ZERO:
+		_cursor_panel.visible = false
+		return
+	_cursor_panel.global_position = rect.position
+	_cursor_panel.size = rect.size
+
+	var col: Color = Color(1, 0.85, 0.2)  # neutral focus (yellow)
+	if _carrying:
+		col = Color(0.3, 0.9, 0.4) if _carry_target_valid() else Color(0.9, 0.3, 0.3)
+	var sb: StyleBoxFlat = _cursor_panel.get_theme_stylebox("panel") as StyleBoxFlat
+	if sb:
+		sb.border_color = col
+		sb.bg_color = Color(col.r, col.g, col.b, 0.15)
+	_cursor_panel.visible = true
+	_cursor_panel.move_to_front()
+
+## Global-space rectangle the cursor should cover right now.
+func _current_cursor_rect() -> Rect2:
+	if _cursor_zone == "quick":
+		var qi: int = clampi(_cursor_quick, 0, _quick_slots.size() - 1)
+		if qi >= 0 and qi < _quick_slots.size():
+			return _quick_slots[qi].get_global_rect()
+		return Rect2()
+
+	var base: Vector2 = _grid_area.global_position
+	if _carrying:
+		var s: InventorySlot = inventory.get_slot_at_anchor(_carry_anchor)
+		var w: int = s.item.slots.x if s else 1
+		var h: int = s.item.slots.y if s else 1
+		var x: int = clampi(Inventory.x_of(_cursor_cell), 0, Inventory.GRID_W - w)
+		var y: int = clampi(Inventory.y_of(_cursor_cell), 0, Inventory.GRID_H - h)
+		return Rect2(base + Vector2(x * CELL_SIZE, y * CELL_SIZE), Vector2(w * CELL_SIZE, h * CELL_SIZE))
+
+	# Not carrying: outline the whole item under the cursor, or a single empty cell.
+	var owner: int = inventory.get_anchor_of_cell(_cursor_cell)
+	if owner >= 0:
+		var s2: InventorySlot = inventory.get_slot_at_anchor(owner)
+		var ax: int = Inventory.x_of(owner)
+		var ay: int = Inventory.y_of(owner)
+		return Rect2(base + Vector2(ax * CELL_SIZE, ay * CELL_SIZE),
+			Vector2(s2.item.slots.x * CELL_SIZE, s2.item.slots.y * CELL_SIZE))
+	var cx: int = Inventory.x_of(_cursor_cell)
+	var cy: int = Inventory.y_of(_cursor_cell)
+	return Rect2(base + Vector2(cx * CELL_SIZE, cy * CELL_SIZE), Vector2(CELL_SIZE, CELL_SIZE))
+
+## Would dropping the carried item at the cursor be accepted?
+func _carry_target_valid() -> bool:
+	if _cursor_zone == "quick":
+		return true
+	var s: InventorySlot = inventory.get_slot_at_anchor(_carry_anchor)
+	if s == null:
+		return false
+	var w: int = s.item.slots.x
+	var h: int = s.item.slots.y
+	var x: int = clampi(Inventory.x_of(_cursor_cell), 0, Inventory.GRID_W - w)
+	var y: int = clampi(Inventory.y_of(_cursor_cell), 0, Inventory.GRID_H - h)
+	return inventory.rect_fits(Inventory.xy_to_index(x, y), w, h, _carry_anchor)
+
+## Move the cursor by one grid step (or between grid and quick bar).
+func _move_cursor(dx: int, dy: int) -> void:
+	if inventory == null:
+		return
+
+	if _cursor_zone == "quick":
+		if dy < 0:
+			# Up out of the quick bar into the grid's bottom row.
+			_cursor_zone = "grid"
+			var gx: int = clampi(_cursor_quick, 0, Inventory.GRID_W - 1)
+			_cursor_cell = Inventory.xy_to_index(gx, Inventory.GRID_H - 1)
+		else:
+			_cursor_quick = clampi(_cursor_quick + dx, 0, Inventory.QUICK_COUNT - 1)
+		_update_cursor()
+		return
+
+	# Grid zone
+	var x: int = Inventory.x_of(_cursor_cell)
+	var y: int = Inventory.y_of(_cursor_cell)
+	var start_owner: int = inventory.get_anchor_of_cell(_cursor_cell)
+	var nx: int = x + dx
+	var ny: int = y + dy
+
+	if ny >= Inventory.GRID_H:
+		# Down out of the grid into the quick bar.
+		_cursor_zone = "quick"
+		_cursor_quick = clampi(x, 0, Inventory.QUICK_COUNT - 1)
+		_update_cursor()
+		return
+	if nx < 0 or nx >= Inventory.GRID_W or ny < 0:
+		return
+
+	var ncell: int = Inventory.xy_to_index(nx, ny)
+	# When not carrying, step over cells belonging to the same item so one press
+	# moves to the next item/empty cell instead of within a multi-cell item.
+	if not _carrying and start_owner != -1:
+		while inventory.get_anchor_of_cell(ncell) == start_owner:
+			nx += dx
+			ny += dy
+			if nx < 0 or nx >= Inventory.GRID_W or ny < 0:
+				return
+			if ny >= Inventory.GRID_H:
+				_cursor_zone = "quick"
+				_cursor_quick = clampi(x, 0, Inventory.QUICK_COUNT - 1)
+				_update_cursor()
+				return
+			ncell = Inventory.xy_to_index(nx, ny)
+
+	_cursor_cell = ncell
+	_update_cursor()
+
+## A / Enter: grab or drop when carrying; otherwise grab a grid item or equip a quick slot.
+func _activate() -> void:
+	if inventory == null:
+		return
+	if _carrying:
+		_drop_carry()
+		return
+	if _cursor_zone == "quick":
+		_equip_cursor_quick()
+		return
+	var owner: int = inventory.get_anchor_of_cell(_cursor_cell)
+	if owner >= 0:
+		_carrying = true
+		_carry_anchor = owner
+		_cursor_cell = owner  # snap to anchor for predictable placement
+		_update_cursor()
+
+func _drop_carry() -> void:
+	if _cursor_zone == "quick":
+		# Binding a grid item to a quick slot (controller equivalent of grid->quick drag).
+		inventory.set_quick(_cursor_quick, _carry_anchor)
+		_carrying = false
+		_carry_anchor = -1
+		_update_cursor()
+		return
+
+	var s: InventorySlot = inventory.get_slot_at_anchor(_carry_anchor)
+	if s == null:
+		_carrying = false
+		_carry_anchor = -1
+		_update_cursor()
+		return
+	var w: int = s.item.slots.x
+	var h: int = s.item.slots.y
+	var x: int = clampi(Inventory.x_of(_cursor_cell), 0, Inventory.GRID_W - w)
+	var y: int = clampi(Inventory.y_of(_cursor_cell), 0, Inventory.GRID_H - h)
+	var dst: int = Inventory.xy_to_index(x, y)
+
+	var src: int = _carry_anchor
+	_carrying = false
+	_carry_anchor = -1
+	if inventory.move_item(src, dst):
+		_cursor_cell = dst
+	else:
+		# Didn't fit — keep carrying so the player can reposition.
+		_carrying = true
+		_carry_anchor = src
+		_show_toast("Won't fit here")
+	_update_cursor()
+
+func _equip_cursor_quick() -> void:
+	if player == null:
+		return
+	if player.has_method("equip_from_quick"):
+		player.equip_from_quick(_cursor_quick)
+		_update_outlines()
+
+func _cancel_or_close() -> void:
+	if _carrying:
+		_carrying = false
+		_carry_anchor = -1
+		_update_cursor()
+	else:
+		close()
 
 func _on_throw_requested(anchor: int, amount: int) -> void:
 	_throw_from_anchor(anchor, amount)

@@ -9,7 +9,7 @@
 [ext_resource type="Resource" uid="uid://deqakytyh8hn4" path="res://assets/resources/items/greatsword.tres" id="7_gswrd"]
 [ext_resource type="Resource" uid="uid://bolqa5kmc5nwi" path="res://assets/resources/items/bolt.tres" id="8_bolt"]
 [ext_resource type="PackedScene" uid="uid://bnqvqto31x45a" path="res://src/objects/door.tscn" id="9_door"]
-[ext_resource type="PackedScene" uid="uid://c8movablebox01" path="res://src/objects/movable_box.tscn" id="10_box"]
+[ext_resource type="PackedScene" uid="uid://428wtotmf7b5" path="res://src/objects/movable_box.tscn" id="10_box"]
 
 [sub_resource type="Environment" id="Environment_r6u00"]
 background_mode = 1
@@ -61,8 +61,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0, 2.4)
 item = ExtResource("8_bolt")
 count = 5
 
-[node name="Door" parent="." instance=ExtResource("9_door")]
+[node name="Door" parent="." unique_id=1152589515 instance=ExtResource("9_door")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, -3)
 
-[node name="MovableBox" parent="." instance=ExtResource("10_box")]
+[node name="MovableBox" parent="." unique_id=212960665 instance=ExtResource("10_box")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, -3)

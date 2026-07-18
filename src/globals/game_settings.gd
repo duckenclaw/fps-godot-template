@@ -22,12 +22,29 @@ var mouse_sensitivity: float = 0.003
 var invert_camera_x: bool = false
 var invert_camera_y: bool = false
 
+# Controller settings
+var controller_look_sensitivity: float = 3.0  # right-stick look speed (radians/sec at full deflection)
+var controller_deadzone: float = 0.2          # right-stick radial deadzone (0-1)
+var invert_controller_y: bool = false
+
 # Localization
 var locale: String = "en"  # persisted; applied by the Localization autoload
+
+## Actions whose bindings can be remapped in the options screen and persisted to disk.
+const REBINDABLE_ACTIONS: Array[String] = [
+	"forward", "backward", "left", "right",
+	"jump", "dash", "sprint", "crouch",
+	"interact", "inventory", "reload",
+	"tilt_left", "tilt_right",
+	"right_hand", "left_hand",
+	"equip_1", "equip_2", "equip_3", "equip_4",
+	"equip_5", "equip_6", "equip_7", "equip_8",
+]
 
 
 func _ready() -> void:
 	load_settings()
+	load_keybinds()
 	apply_graphics_settings()
 	apply_audio_settings()
 	apply_vsync()
@@ -63,6 +80,11 @@ func load_settings() -> void:
 	invert_camera_x = config.get_value("gameplay", "invert_camera_x", false)
 	invert_camera_y = config.get_value("gameplay", "invert_camera_y", false)
 
+	# Controller
+	controller_look_sensitivity = config.get_value("controller", "look_sensitivity", 3.0)
+	controller_deadzone = config.get_value("controller", "deadzone", 0.2)
+	invert_controller_y = config.get_value("controller", "invert_y", false)
+
 	# Localization
 	locale = config.get_value("localization", "locale", "en")
 
@@ -72,6 +94,8 @@ func load_settings() -> void:
 ## Save settings to config file
 func save_settings() -> void:
 	var config = ConfigFile.new()
+	# Load existing file first so sections we don't touch here (e.g. keybinds) survive.
+	config.load(SETTINGS_PATH)
 
 	# Graphics
 	config.set_value("graphics", "screen_mode", screen_mode)
@@ -92,6 +116,11 @@ func save_settings() -> void:
 	config.set_value("gameplay", "invert_camera_x", invert_camera_x)
 	config.set_value("gameplay", "invert_camera_y", invert_camera_y)
 
+	# Controller
+	config.set_value("controller", "look_sensitivity", controller_look_sensitivity)
+	config.set_value("controller", "deadzone", controller_deadzone)
+	config.set_value("controller", "invert_y", invert_controller_y)
+
 	# Localization
 	config.set_value("localization", "locale", locale)
 
@@ -100,6 +129,41 @@ func save_settings() -> void:
 		push_error("Failed to save settings: " + str(error))
 	else:
 		print("Settings saved successfully")
+
+
+## Persist the current InputMap bindings for all rebindable actions.
+## Stores each action's event list under the [keybinds] section; ConfigFile
+## serializes the InputEvent resources directly.
+func save_keybinds() -> void:
+	var config = ConfigFile.new()
+	config.load(SETTINGS_PATH)  # preserve other sections
+	for action in REBINDABLE_ACTIONS:
+		if InputMap.has_action(action):
+			config.set_value("keybinds", action, InputMap.action_get_events(action))
+	var error = config.save(SETTINGS_PATH)
+	if error != OK:
+		push_error("Failed to save keybinds: " + str(error))
+
+
+## Restore any saved custom bindings into the InputMap, overriding the
+## defaults declared in project.godot. Actions without a saved override keep
+## their project defaults.
+func load_keybinds() -> void:
+	var config = ConfigFile.new()
+	if config.load(SETTINGS_PATH) != OK:
+		return
+	if not config.has_section("keybinds"):
+		return
+	for action in REBINDABLE_ACTIONS:
+		if not config.has_section_key("keybinds", action):
+			continue
+		if not InputMap.has_action(action):
+			continue
+		var events = config.get_value("keybinds", action, [])
+		InputMap.action_erase_events(action)
+		for e in events:
+			if e is InputEvent:
+				InputMap.action_add_event(action, e)
 
 
 ## Apply audio settings to AudioServer buses
