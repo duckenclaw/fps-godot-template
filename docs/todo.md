@@ -28,7 +28,7 @@
 - [x] language selector
 
 ## Framework / production systems (done)
-- [x] FP Framework addon (plugin auto-registers autoloads)
+- [x] Game Core addon (plugin auto-registers autoloads)
 - [x] EventBus (decoupled gameplay events)
 - [x] SceneManager (async load + fade transitions + level registry)
 - [x] AudioManager (music crossfade + pooled SFX) + default bus layout fix

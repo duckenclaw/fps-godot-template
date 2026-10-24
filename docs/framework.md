@@ -1,6 +1,6 @@
-# FP Framework (Core Service Layer)
+# Game Core (Core Service Layer)
 
-The reusable, genre-agnostic services live in the **`addons/fp_framework/`** plugin. Enabling the
+The reusable, genre-agnostic services live in the **`addons/core/`** plugin. Enabling the
 plugin registers a set of autoload singletons; dropping the folder into any Godot project wires them
 up automatically (the plugin's `_enter_tree()` calls `add_autoload_singleton`).
 

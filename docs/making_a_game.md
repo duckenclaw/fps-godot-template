@@ -2,7 +2,7 @@
 
 This template aims to get you from an empty project to a shippable first-person game by doing four
 things: import assets, define data, build levels, and wire mechanics. Everything below builds on the
-[FP Framework](framework.md) services.
+[Game Core](framework.md) services.
 
 ## 1. Import your assets
 

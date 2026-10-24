@@ -1,15 +1,15 @@
-[gd_scene load_steps=14 format=3 uid="uid://crk1dyw7mn53n"]
+[gd_scene format=3 uid="uid://crk1dyw7mn53n"]
 
 [ext_resource type="PackedScene" uid="uid://yy8qdtf7sruo" path="res://src/environments/test_environment.tscn" id="1_bww5v"]
-[ext_resource type="PackedScene" uid="uid://ct7eavw7p0ci3" path="res://src/player/player.tscn" id="2_abjwo"]
-[ext_resource type="PackedScene" uid="uid://cbvxpckpickup" path="res://src/items/pickup.tscn" id="3_ag7wx"]
+[ext_resource type="PackedScene" uid="uid://ct7eavw7p0ci3" path="res://addons/fps_controller/player/player.tscn" id="2_abjwo"]
+[ext_resource type="PackedScene" uid="uid://cbvxpckpickup" path="res://addons/fps_controller/items/pickup.tscn" id="3_ag7wx"]
 [ext_resource type="Resource" uid="uid://c0wajdxrlhlh3" path="res://assets/resources/items/sword.tres" id="4_yr14f"]
 [ext_resource type="Resource" uid="uid://bp2rrhq538lev" path="res://assets/resources/items/crossbow.tres" id="5_o154w"]
 [ext_resource type="Resource" uid="uid://bcws7xybsm1oj" path="res://assets/resources/items/potion.tres" id="6_4jgn1"]
 [ext_resource type="Resource" uid="uid://deqakytyh8hn4" path="res://assets/resources/items/greatsword.tres" id="7_gswrd"]
 [ext_resource type="Resource" uid="uid://bolqa5kmc5nwi" path="res://assets/resources/items/bolt.tres" id="8_bolt"]
-[ext_resource type="PackedScene" uid="uid://bnqvqto31x45a" path="res://src/objects/door.tscn" id="9_door"]
-[ext_resource type="PackedScene" uid="uid://428wtotmf7b5" path="res://src/objects/movable_box.tscn" id="10_box"]
+[ext_resource type="PackedScene" uid="uid://bnqvqto31x45a" path="res://addons/fps_controller/objects/door.tscn" id="9_door"]
+[ext_resource type="PackedScene" uid="uid://428wtotmf7b5" path="res://addons/fps_controller/objects/movable_box.tscn" id="10_box"]
 
 [sub_resource type="Environment" id="Environment_r6u00"]
 background_mode = 1
@@ -29,6 +29,7 @@ camera_attributes = SubResource("CameraAttributesPractical_alk16")
 compositor = SubResource("Compositor_bww5v")
 
 [node name="TestEnvironment" parent="." unique_id=799669179 instance=ExtResource("1_bww5v")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0034189224, 0.0068688393, -0.0004413128)
 
 [node name="Player" parent="." unique_id=1599086198 instance=ExtResource("2_abjwo")]
 

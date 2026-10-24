@@ -31,7 +31,7 @@ A comprehensive first-person shooter template for Godot 4.6+ featuring advanced 
 - Options screen with tabbed interface
 - Key rebinding system
 
-### Production Systems (FP Framework addon)
+### Production Systems (Game Core addon)
 - **EventBus:** decoupled, signal-driven gameplay events
 - **SceneManager:** async level loading with fade transitions and a level registry
 - **AudioManager:** music crossfade + pooled 2D/3D sound effects
@@ -40,7 +40,7 @@ A comprehensive first-person shooter template for Godot 4.6+ featuring advanced 
 - **Debug overlay:** toggleable FPS/watch display (F3)
 - Reusable **Health** component, **ItemDB** registry, and **Utils** helpers
 
-See **[FP Framework](docs/framework.md)** for details.
+See **[Game Core](docs/framework.md)** for details.
 
 ## Getting Started
 
@@ -81,30 +81,57 @@ All controls can be rebound in the Options > Controls menu.
 
 ```
 fps-godot-template/
-├── addons/
-│   └── fp_framework/    # Reusable service layer plugin (autoload singletons)
-├── assets/              # Game assets
-│   ├── images/          # Images and textures
-│   ├── localization/    # translations.csv + generated .translation files
-│   ├── resources/       # Godot resources (.tres) incl. items and bus layout
-│   └── styles/          # UI themes and styles
-├── docs/                # Documentation (see Documentation section below)
-├── levels/              # Level scenes (start from level_template.tscn)
-├── src/                 # Source code
-│   ├── components/      # Reusable components (e.g. Health)
-│   ├── globals/         # GameSettings + Utils
-│   ├── items/           # Inventory, items, ItemDB, pickups
-│   ├── objects/         # World objects (doors, movable boxes)
-│   ├── player/          # Player controller and movement states
-│   ├── ui/              # User interface screens and components
-│   └── weapons/         # Projectiles
-└── project.godot        # Godot project file
+├── addons/                  # Reusable, shareable kits — see Modular Addon Architecture
+│   ├── core/                # Service layer autoloads: EventBus, SceneManager,
+│   │                        #   AudioManager, SaveManager, Localization, Debug
+│   ├── settings_kit/        # SettingsManager base + key/gamepad rebind-row UI
+│   ├── inventory_kit/       # ItemResource, ItemDB, Inventory, InventorySlot
+│   ├── components_kit/      # Health component, StateMachine + State base
+│   └── fps_controller/      # FPS genre kit: player, camera, hands, movement
+│                            #   states, grab controller, projectile, props, UI
+├── assets/                  # Images, models, sounds, localization, item .tres, styles
+├── docs/                    # Documentation (see Documentation section below)
+├── levels/                  # Level scenes (start from level_template.tscn)
+├── src/                     # This template's game-specific code (not the kits)
+│   ├── globals/             # GameSettings (extends SettingsManager) + Utils
+│   ├── environments/        # WorldEnvironment resources
+│   ├── ui/                  # App shell: main menu + title screen
+│   └── test_3D.tscn         # Demo level entry point
+└── project.godot            # Godot project file
 ```
+
+## Modular Addon Architecture
+
+The template is split into five self-contained addons under `addons/`, so the
+reusable parts can be shared across games (FPS, third-person, 2D, top-down) while
+each game keeps only its own code in `src/`. Four of the five are **game-agnostic**
+and intended to be shared verbatim between projects; `fps_controller` is this
+template's FPS-specific genre layer.
+
+| Addon | What it provides | Shared across genres? |
+|-------|------------------|-----------------------|
+| **core** | `EventBus`, `SceneManager`, `AudioManager`, `SaveManager`, `Localization`, `Debug` autoloads | Yes |
+| **settings_kit** | `SettingsManager` base (graphics/audio/gameplay/controller/locale persistence + key & gamepad rebinding) and the `RebindContainer` UI | Yes |
+| **inventory_kit** | `ItemResource`, `ItemDB`, grid `Inventory`, `InventorySlot` — pure data/logic, no 2D/3D dependency | Yes |
+| **components_kit** | `Health` component and a genre-agnostic `StateMachine` + `State` base | Yes |
+| **fps_controller** | First-person player, camera, hands viewmodel, movement states, grab controller, projectile, example props, and the FPS gameplay/menu UI | No — FPS only |
+
+**Dependency direction:** your game's `src/` code may depend on the addons, and
+`fps_controller` depends on `core` + `components_kit` + `inventory_kit`. The four
+shared kits never reference game `src/` code, so they can be lifted out into their
+own repositories unchanged. This repo's `GameSettings` autoload
+(`src/globals/game_settings.gd`) is a thin subclass of `settings_kit`'s
+`SettingsManager` that only supplies this game's rebindable action list.
+
+This is the first step of a larger plan: extract the four shared kits into their
+own repositories (consumed by per-genre template repos via git submodule and the
+Godot Asset Library), with this repo becoming the canonical FPS template. See
+**[Modular Addons & Roadmap](docs/addons.md)**.
 
 ## Documentation
 
 ### Framework & Workflow
-- **[FP Framework](docs/framework.md)** - The reusable service layer: EventBus, SceneManager, AudioManager, SaveManager, Localization, Debug, plus the Health/ItemDB/Utils building blocks
+- **[Game Core](docs/framework.md)** - The reusable service layer: EventBus, SceneManager, AudioManager, SaveManager, Localization, Debug, plus the Health/ItemDB/Utils building blocks
 - **[Making a Game](docs/making_a_game.md)** - End-to-end guide: import assets → define items → build levels → wire mechanics → ship
 
 ### Player Controller
@@ -193,7 +220,7 @@ The template includes a 3-bus audio setup:
 - **Music:** Background music (child of Master)
 - **Effects:** Sound effects (child of Master)
 
-Assign your AudioStreamPlayers to the appropriate bus for proper volume control through the settings menu. `master_bus.tres` is registered as the project's default bus layout. For runtime playback, prefer the **AudioManager** autoload (`play_music`, `play_sfx`, `play_sfx_3d`) — see [FP Framework](docs/framework.md#audiomanager).
+Assign your AudioStreamPlayers to the appropriate bus for proper volume control through the settings menu. `master_bus.tres` is registered as the project's default bus layout. For runtime playback, prefer the **AudioManager** autoload (`play_music`, `play_sfx`, `play_sfx_3d`) — see [Game Core](docs/framework.md#audiomanager).
 
 ## Contributing
 

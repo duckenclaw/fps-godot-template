@@ -1,7 +1,7 @@
-[gd_resource type="Resource" script_class="ItemResource" load_steps=3 format=3 uid="uid://bolqa5kmc5nwi"]
+[gd_resource type="Resource" script_class="ItemResource" format=3 uid="uid://bolqa5kmc5nwi"]
 
 [ext_resource type="Texture2D" uid="uid://oeontma8uv73" path="res://assets/images/bolt.png" id="1_iqdy3"]
-[ext_resource type="Script" uid="uid://duqff7yvx62ta" path="res://src/items/item_resource.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://duqff7yvx62ta" path="res://addons/inventory_kit/item_resource.gd" id="1_script"]
 
 [resource]
 script = ExtResource("1_script")

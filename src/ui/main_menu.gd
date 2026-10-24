@@ -5,10 +5,17 @@ extends Control
 const START_LEVEL_ID := "level_test"
 const START_LEVEL_PATH := "res://src/test_3D.tscn"
 
+## This menu is the game's entry scene, so its _ready runs once at startup. We
+## register the project's stable level ids here (on the persistent SceneManager
+## autoload) rather than baking them into the reusable core addon.
+const MAIN_MENU_ID := "main_menu"
+const MAIN_MENU_PATH := "res://src/ui/main_menu.tscn"
+
 @onready var title_screen: Control = $TitleScreen
 @onready var options_screen: Control = $OptionsScreen
 
 func _ready() -> void:
+	SceneManager.register_level(MAIN_MENU_ID, MAIN_MENU_PATH)
 	SceneManager.register_level(START_LEVEL_ID, START_LEVEL_PATH)
 
 func _change_screen(screen: Control):

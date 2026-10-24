@@ -1,17 +1,6 @@
-[gd_resource type="Theme" load_steps=4 format=3 uid="uid://ntqh6xyylbj0"]
+[gd_resource type="Theme" format=3 uid="uid://ntqh6xyylbj0"]
 
 [ext_resource type="FontFile" uid="uid://ev1qvknhaiu7" path="res://assets/PixeloidMono.ttf" id="1_5x3i2"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wl1kw"]
-bg_color = Color(0.13725491, 0.13725491, 0.13725491, 1)
-corner_radius_top_left = 12
-corner_radius_top_right = 12
-corner_radius_bottom_right = 12
-corner_radius_bottom_left = 12
-expand_margin_left = 24.0
-expand_margin_top = 12.0
-expand_margin_right = 24.0
-expand_margin_bottom = 12.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_focus"]
 bg_color = Color(1, 0.85, 0.2, 0.12)
@@ -28,6 +17,17 @@ expand_margin_left = 6.0
 expand_margin_top = 4.0
 expand_margin_right = 6.0
 expand_margin_bottom = 4.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wl1kw"]
+bg_color = Color(0.13725491, 0.13725491, 0.13725491, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 24.0
+expand_margin_top = 12.0
+expand_margin_right = 24.0
+expand_margin_bottom = 12.0
 
 [resource]
 default_font = ExtResource("1_5x3i2")

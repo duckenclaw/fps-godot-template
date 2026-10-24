@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://ddvtvd40qb7ab"]
+
+[ext_resource type="Script" uid="uid://c3kju5edri3gs" path="res://addons/settings_kit/rebind_container.gd" id="1_nog8t"]
+
+[node name="RebindContainer" type="HBoxContainer" unique_id=329070384]
+theme_override_constants/separation = 20
+alignment = 1
+script = ExtResource("1_nog8t")
+
+[node name="Name" type="Label" parent="." unique_id=1336713773]
+custom_minimum_size = Vector2(200, 60)
+layout_mode = 2
+text = "Action Name"
+vertical_alignment = 1
+
+[node name="Hotkey" type="Button" parent="." unique_id=100465426]
+custom_minimum_size = Vector2(240, 60)
+layout_mode = 2
+toggle_mode = true
+text = "Action Key"
+
+[connection signal="toggled" from="Hotkey" to="." method="_on_hotkey_rebind_toggled"]
