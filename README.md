@@ -49,10 +49,37 @@ See **[Game Core](docs/framework.md)** for details.
 - Basic familiarity with Godot and GDScript
 
 ### How to Use
-1. Clone or download this repository
-2. Open the project in Godot 4.6+
-3. Run the project (F5) or open the main scene
-4. Press ESC to access the pause menu and options
+
+The reusable kits under `addons/` are **git submodules**, so clone recursively:
+
+```bash
+git clone --recurse-submodules https://github.com/duckenclaw/fps-godot-template
+# already cloned without --recurse-submodules?
+git submodule update --init --recursive
+```
+
+Then:
+1. Open the project in Godot 4.6+
+2. Run the project (F5) or open the main scene
+3. Press ESC to access the pause menu and options
+
+### Start your own game
+
+This repo is a GitHub **template** — click *Use this template* (or clone it) and:
+
+1. Clone your copy **with `--recurse-submodules`** (the `addons/` kits are submodules).
+2. Rename the project in `project.godot` (`config/name`) and set your own `config/icon`.
+3. Register your levels in `src/ui/main_menu.gd` (`SceneManager.register_level(id, path)`)
+   and point `START_LEVEL_PATH` at your first level.
+4. Add your items as `.tres` in `assets/resources/items/` (or set `ItemDB.items_dir`).
+5. Edit the rebindable action list in `src/globals/game_settings.gd` to match your inputs.
+6. Build levels from `levels/level_template.tscn`; drop in the player from
+   `addons/fps_controller/player/player.tscn`.
+7. To change a kit for all your games, commit in that submodule's own repo and bump the
+   pointer here; for one-off tweaks, edit inside `addons/<kit>` and commit in that repo.
+
+See **[Modular Addon Architecture](#modular-addon-architecture)** and
+**[docs/addons.md](docs/addons.md)** for how the kits fit together.
 
 ### Default Controls
 
@@ -123,9 +150,13 @@ own repositories unchanged. This repo's `GameSettings` autoload
 (`src/globals/game_settings.gd`) is a thin subclass of `settings_kit`'s
 `SettingsManager` that only supplies this game's rebindable action list.
 
-This is the first step of a larger plan: extract the four shared kits into their
-own repositories (consumed by per-genre template repos via git submodule and the
-Godot Asset Library), with this repo becoming the canonical FPS template. See
+Each addon under `addons/` is a **git submodule** of its own repository, so a fix
+in a kit propagates to every game that uses it:
+
+- [godot-core](https://github.com/duckenclaw/godot-core) · [godot-settings-kit](https://github.com/duckenclaw/godot-settings-kit) · [godot-inventory-kit](https://github.com/duckenclaw/godot-inventory-kit) · [godot-components-kit](https://github.com/duckenclaw/godot-components-kit) · [godot-fps-controller](https://github.com/duckenclaw/godot-fps-controller)
+- Aggregated and documented in the hub: [godot-game-kit](https://github.com/duckenclaw/godot-game-kit)
+
+This repo is the canonical **FPS template** in that ecosystem. See
 **[Modular Addons & Roadmap](docs/addons.md)**.
 
 ## Documentation

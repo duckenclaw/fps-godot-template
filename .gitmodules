@@ -1,0 +1,15 @@
+[submodule "addons/core"]
+	path = addons/core
+	url = https://github.com/duckenclaw/godot-core.git
+[submodule "addons/settings_kit"]
+	path = addons/settings_kit
+	url = https://github.com/duckenclaw/godot-settings-kit.git
+[submodule "addons/inventory_kit"]
+	path = addons/inventory_kit
+	url = https://github.com/duckenclaw/godot-inventory-kit.git
+[submodule "addons/components_kit"]
+	path = addons/components_kit
+	url = https://github.com/duckenclaw/godot-components-kit.git
+[submodule "addons/fps_controller"]
+	path = addons/fps_controller
+	url = https://github.com/duckenclaw/godot-fps-controller.git
