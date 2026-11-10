@@ -21,3 +21,7 @@ builds/*
 # IDE
 .idea
 .claude
+# Blender source files stay local
+*.blend
+*.blend1
+*.blend.import
